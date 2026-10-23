@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-23T17:51:15.194Z",
+ "generated": "2026-10-23T17:52:48.917Z",
  "method": "Walk-forward: the data as it stood before each week, projected with model.js, tested against a stand-in line at floor(season-to-date average) + 0.5 because past PrizePicks lines are not available. Probabilities are calibrated per stat with Platt scaling: P(more) = sigmoid(a + b * logit(p)).",
  "seasons": [
   2025,
