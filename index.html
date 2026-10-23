@@ -765,36 +765,34 @@ function renderPicks() {
 }
 
 // ---------- recommendations ----------
-const SPOT_MARKETS = {pyd: 160, cmp: 14, ryd: 30, car: 9, recyd: 30, rec: 2.5, rry: 45, fan: 8};
+// Same minimums and stand-in line the backtest uses, so recommendations match what was tested.
+const SPOT_FLOOR = {pyd: 160, ptd: 0.6, cmp: 14, att: 22, int: 0.3, pry: 170, ryd: 25, car: 8, recyd: 25, rec: 2.5, rry: 40, td: 0.25, fan: 7};
+const avgLine = (m, avg) => m.kind === 'pois' ? (avg >= 1.4 ? 1.5 : 0.5) : Math.floor(avg) + 0.5;
 function spots() {
-  const out = [];
+  const out = [], be = breakeven(2);
   for (const pl of P) {
     if (pl.games.length < 3) continue;
     const inj = D.inj[pl.id];
-    if (inj && (inj.s === 'Out' || inj.s === 'Doubtful')) continue;
+    if (inj && inj.wk === curWeek && (inj.s === 'Out' || inj.s === 'Doubtful')) continue;
     const ng = nextGame(pl.t);
     if (!ng || ng.bye || ng.started || ng.g.wk !== curWeek) continue;
     if (pl.games.at(-1).wk < curWeek - 3) continue; // hasn't played lately
     for (const m of marketsFor(pl)) {
-      const floor = SPOT_MARKETS[m.k]; if (floor == null) continue;
-      const pr = project(pl, m); if (!pr) continue;
-      const avg = pr.xs.reduce((a, b) => a + b, 0) / pr.xs.length;
+      if (m.k === 'td' || m.k === 'int') continue; // yes/no props crowd the list; still available in Prop check
+      const floor = SPOT_FLOOR[m.k]; if (floor == null) continue;
+      if (calibration && !(calibration.platt || {})[m.k]) continue; // only stats the backtest covers
+      const xs = pl.games.map(g => m.f(g)), avg = xs.reduce((a, b) => a + b, 0) / xs.length;
       if (avg < floor) continue;
-      const l3 = pr.xs.slice(-3), l3avg = l3.reduce((a, b) => a + b, 0) / l3.length;
-      const ratio = pr.mu / avg;
-      const side = ratio >= 1 ? 'more' : 'less';
-      // Needs the matchup and recent form to agree with the direction
-      if (side === 'more' && !(pr.fMatch > 1.02 && l3avg >= avg * 0.95)) continue;
-      if (side === 'less' && !(pr.fMatch < 0.98 && l3avg <= avg * 1.05)) continue;
-      const score = Math.abs(ratio - 1);
-      if (score < 0.06) continue;
-      out.push({pl, m, pr, avg, l3avg, ratio, side, score, inj});
+      const line0 = avgLine(m, avg), e = evaluate(pl, m, line0); if (!e) continue;
+      if (e.pSide < be) continue;
+      const l3 = xs.slice(-3), l3avg = l3.reduce((a, b) => a + b, 0) / l3.length;
+      out.push({pl, m, pr: e, avg, l3avg, line0, side: e.side, pAt: e.pSide, score: e.pSide, inj});
     }
   }
   const best = {};
   out.forEach(s => { const k = s.pl.id + s.side; if (!best[k] || best[k].score < s.score) best[k] = s; });
   const list = Object.values(best).sort((a, b) => b.score - a.score);
-  return {more: list.filter(s => s.side === 'more').slice(0, 12), less: list.filter(s => s.side === 'less').slice(0, 8)};
+  return {more: list.filter(s => s.side === 'more').slice(0, 10), less: list.filter(s => s.side === 'less').slice(0, 10)};
 }
 function buildSlip(rows, legs) {
   const be = breakeven(legs);
@@ -820,7 +818,7 @@ function renderRecs() {
   const left = wkGames.filter(g => g.hs == null).length;
   $('#recHero').innerHTML = `<span class="eyebrow">Week ${curWeek} · ${left} game${left === 1 ? '' : 's'} left</span>
     <h2>This week’s top picks</h2>
-    <p>Players the model projects well above or below their season average, and the PrizePicks line to look for. Tap any card for the full breakdown.</p>
+    <p>Props where the calibrated model gives at least ${pct(be2)} at a line near the player’s season average, plus the worst line still worth taking. Tap any card for the full breakdown.</p>
     <div class="stats"><div class="chipstat"><b>${recSpots.more.length}</b><span>More spots</span></div><div class="chipstat"><b>${recSpots.less.length}</b><span>Less spots</span></div><div class="chipstat"><b>${pct(be2)}</b><span>2-pick break-even</span></div>${calibration ? `<div class="chipstat"><b>${(calibration.n / 1000).toFixed(1)}k</b><span>Past props tested</span></div>` : ''}</div>`;
   // Best slips from the pasted board
   const s2 = buildSlip(boardRows, 2), s3 = buildSlip(boardRows, 3);
@@ -848,18 +846,18 @@ function renderRecs() {
       <div class="who">${tm(s.pl.t)}<b>${esc(s.pl.n)}</b><span class="mu">${s.pl.p} · ${ng.home ? 'vs' : '@'} ${ng.opp}</span>${status}</div>
       <div class="call"><div><div class="side ${s.side}">${s.side === 'more' ? 'More' : 'Less'} ${L ?? ''}</div><div class="what">${esc(s.m.label)}${L != null ? (s.side === 'more' ? ' · line at or below' : ' · line at or above') : ''}</div></div>
         ${L != null ? `<button class="btn sm soft-${s.side}" data-spotadd="1" aria-label="Add ${esc(s.pl.n)} to slip">+ Slip</button>` : ''}</div>
-      <div class="nums"><span>Proj <b>${fmt1(s.pr.mu)}</b></span><span>Season avg <b>${fmt1(s.avg)}</b></span></div>
+      <div class="nums"><span>Proj <b>${fmt1(s.pr.mu)}</b></span><span>Season avg <b>${fmt1(s.avg)}</b></span><span>At ${s.line0}: <b>${pct(s.pAt)}</b></span></div>
       <div class="bar2" role="img" aria-label="Projection ${fmt1(s.pr.mu)} against season average ${fmt1(s.avg)}"><i style="width:${w(s.pr.mu)}%;background:var(--${s.side})"></i><u style="left:${w(s.avg)}%"></u></div>
       <div class="tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
     </div>`;
   };
-  $('#recMore').innerHTML = `<div class="head"><h2>More spots</h2><span class="small muted">Projected above season average</span></div>
-    <p class="small muted">Lines often sit near a player’s season average. Take More only if PrizePicks has the line at or below the number shown.</p>
+  $('#recMore').innerHTML = `<div class="head"><h2>More spots</h2><span class="small muted">Strongest first</span></div>
+    <p class="small muted">Ranked by the model’s calibrated chance at a line near the season average. Take More only if PrizePicks has the line at or below the number shown.</p>
     ${recSpots.more.length ? `<div class="cards">${recSpots.more.map(card).join('')}</div>` : '<p class="muted">No strong More spots this week.</p>'}`;
-  $('#recLess').innerHTML = `<div class="head"><h2>Less spots</h2><span class="small muted">Projected below season average</span></div>
-    <p class="small muted">Tough matchups or a low game total. Take Less only if the line is at or above the number shown.</p>
+  $('#recLess').innerHTML = `<div class="head"><h2>Less spots</h2><span class="small muted">Strongest first</span></div>
+    <p class="small muted">Ranked the same way. Take Less only if the line is at or above the number shown.</p>
     ${recSpots.less.length ? `<div class="cards">${recSpots.less.map(card).join('')}</div>` : '<p class="muted">No strong Less spots this week.</p>'}
-    <p class="note">Each line shown is where the model’s chance reaches the ${pct(be2)} a 2-pick Power Play needs. The bar shows the projection; the black mark is the season average. Check injuries and inactives before kickoff.</p>`;
+    <p class="note">Each line shown is where the model’s chance reaches the ${pct(be2)} a 2-pick Power Play needs. The bar shows the projection; the black mark is the season average. “At” shows the chance at a line near the season average, the setup the backtest tested. Check injuries and inactives before kickoff.</p>`;
   renderModelCheck();
   document.querySelectorAll('[data-spot]').forEach(c => {
     const [id, mk, L] = c.dataset.spot.split('|');
