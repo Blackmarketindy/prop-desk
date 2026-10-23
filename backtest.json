@@ -1,0 +1,658 @@
+{
+ "generated": "2026-10-23T17:51:15.194Z",
+ "method": "Walk-forward: the data as it stood before each week, projected with model.js, tested against a stand-in line at floor(season-to-date average) + 0.5 because past PrizePicks lines are not available. Probabilities are calibrated per stat with Platt scaling: P(more) = sigmoid(a + b * logit(p)).",
+ "seasons": [
+  2025,
+  2026
+ ],
+ "weeks": 19,
+ "n": 13765,
+ "scale": {
+  "pyd": 0.967,
+  "ptd": 0.963,
+  "cmp": 0.969,
+  "att": 0.978,
+  "int": 0.929,
+  "pry": 0.967,
+  "ryd": 0.972,
+  "car": 0.984,
+  "recyd": 0.943,
+  "rec": 0.951,
+  "rry": 0.959,
+  "td": 0.815,
+  "fan": 0.954
+ },
+ "platt": {
+  "pyd": {
+   "a": 0.1248,
+   "b": 0.8495
+  },
+  "ptd": {
+   "a": 0.0994,
+   "b": 0.8422
+  },
+  "cmp": {
+   "a": 0.1507,
+   "b": 1
+  },
+  "att": {
+   "a": 0.0641,
+   "b": 0.8999
+  },
+  "int": {
+   "a": -0.0832,
+   "b": 0.2709
+  },
+  "pry": {
+   "a": 0.1634,
+   "b": 0.8321
+  },
+  "ryd": {
+   "a": -0.2955,
+   "b": 0.3605
+  },
+  "car": {
+   "a": -0.1806,
+   "b": 0.2658
+  },
+  "recyd": {
+   "a": -0.3081,
+   "b": 0.8266
+  },
+  "rec": {
+   "a": -0.2269,
+   "b": 0.5772
+  },
+  "rry": {
+   "a": -0.2797,
+   "b": 0.4942
+  },
+  "td": {
+   "a": -0.2889,
+   "b": 0.6667
+  },
+  "fan": {
+   "a": -0.253,
+   "b": 0.4837
+  }
+ },
+ "shrink": {
+  "pyd": 0.79,
+  "ptd": 0.93,
+  "cmp": 0.98,
+  "att": 0.86,
+  "int": 0.37,
+  "pry": 0.76,
+  "ryd": 0.45,
+  "car": 0.39,
+  "recyd": 1.01,
+  "rec": 0.77,
+  "rry": 0.68,
+  "td": 0.92,
+  "fan": 0.64
+ },
+ "markets": {
+  "pyd": {
+   "label": "Pass Yards",
+   "n": 439,
+   "scale": 0.967,
+   "maeModelRaw": 60.33,
+   "maeModel": 60.06,
+   "maeNaive": 63.21,
+   "biasRaw": -7.62,
+   "bias": -0.07,
+   "overRate": 0.49,
+   "brierUncalibrated": 0.2352,
+   "brierRaw": 0.2367,
+   "brierCalibrated": 0.2363,
+   "brierCoinFlip": 0.25,
+   "k": 0.79,
+   "platt": {
+    "a": 0.1248,
+    "b": 0.8495
+   },
+   "brierPlatt": 0.236,
+   "outOfSample": {
+    "season": 2026,
+    "n": 73,
+    "kFromPriorSeasons": 0.68,
+    "brierRaw": 0.2241,
+    "brierCalibrated": 0.2269,
+    "plattFromPriorSeasons": {
+     "a": 0.1509,
+     "b": 0.7353
+    },
+    "brierPlatt": 0.2234
+   }
+  },
+  "ptd": {
+   "label": "Pass TDs",
+   "n": 475,
+   "scale": 0.963,
+   "maeModelRaw": 0.98,
+   "maeModel": 0.98,
+   "maeNaive": 1.01,
+   "biasRaw": -0.06,
+   "bias": 0,
+   "overRate": 0.571,
+   "brierUncalibrated": 0.2351,
+   "brierRaw": 0.2348,
+   "brierCalibrated": 0.2347,
+   "brierCoinFlip": 0.25,
+   "k": 0.93,
+   "platt": {
+    "a": 0.0994,
+    "b": 0.8422
+   },
+   "brierPlatt": 0.2343,
+   "outOfSample": {
+    "season": 2026,
+    "n": 73,
+    "kFromPriorSeasons": 0.85,
+    "brierRaw": 0.2168,
+    "brierCalibrated": 0.2189,
+    "plattFromPriorSeasons": {
+     "a": 0.0876,
+     "b": 0.7632
+    },
+    "brierPlatt": 0.2185
+   }
+  },
+  "cmp": {
+   "label": "Pass Completions",
+   "n": 461,
+   "scale": 0.969,
+   "maeModelRaw": 5.02,
+   "maeModel": 5.01,
+   "maeNaive": 5.45,
+   "biasRaw": -0.62,
+   "bias": 0.01,
+   "overRate": 0.469,
+   "brierUncalibrated": 0.2249,
+   "brierRaw": 0.2258,
+   "brierCalibrated": 0.2259,
+   "brierCoinFlip": 0.25,
+   "k": 0.98,
+   "platt": {
+    "a": 0.1507,
+    "b": 1
+   },
+   "brierPlatt": 0.2246,
+   "outOfSample": {
+    "season": 2026,
+    "n": 76,
+    "kFromPriorSeasons": 0.95,
+    "brierRaw": 0.254,
+    "brierCalibrated": 0.2523,
+    "plattFromPriorSeasons": {
+     "a": 0.1916,
+     "b": 1
+    },
+    "brierPlatt": 0.2414
+   }
+  },
+  "att": {
+   "label": "Pass Attempts",
+   "n": 466,
+   "scale": 0.978,
+   "maeModelRaw": 7.34,
+   "maeModel": 7.32,
+   "maeNaive": 7.86,
+   "biasRaw": -0.68,
+   "bias": 0.01,
+   "overRate": 0.466,
+   "brierUncalibrated": 0.232,
+   "brierRaw": 0.2325,
+   "brierCalibrated": 0.2325,
+   "brierCoinFlip": 0.25,
+   "k": 0.86,
+   "platt": {
+    "a": 0.0641,
+    "b": 0.8999
+   },
+   "brierPlatt": 0.2323,
+   "outOfSample": {
+    "season": 2026,
+    "n": 76,
+    "kFromPriorSeasons": 0.89,
+    "brierRaw": 0.278,
+    "brierCalibrated": 0.2713,
+    "plattFromPriorSeasons": {
+     "a": 0.0881,
+     "b": 0.9828
+    },
+    "brierPlatt": 0.2678
+   }
+  },
+  "int": {
+   "label": "Interceptions",
+   "n": 426,
+   "scale": 0.929,
+   "maeModelRaw": 0.67,
+   "maeModel": 0.67,
+   "maeNaive": 0.69,
+   "biasRaw": -0.05,
+   "bias": 0,
+   "overRate": 0.462,
+   "brierUncalibrated": 0.2541,
+   "brierRaw": 0.2538,
+   "brierCalibrated": 0.2481,
+   "brierCoinFlip": 0.25,
+   "k": 0.37,
+   "platt": {
+    "a": -0.0832,
+    "b": 0.2709
+   },
+   "brierPlatt": 0.2477,
+   "outOfSample": {
+    "season": 2026,
+    "n": 66,
+    "kFromPriorSeasons": 0.32,
+    "brierRaw": 0.2471,
+    "brierCalibrated": 0.2452,
+    "plattFromPriorSeasons": {
+     "a": -0.1021,
+     "b": 0.1962
+    },
+    "brierPlatt": 0.2462
+   }
+  },
+  "pry": {
+   "label": "Pass+Rush Yds",
+   "n": 460,
+   "scale": 0.967,
+   "maeModelRaw": 63.14,
+   "maeModel": 63.03,
+   "maeNaive": 65.84,
+   "biasRaw": -7.96,
+   "bias": 0.05,
+   "overRate": 0.5,
+   "brierUncalibrated": 0.2375,
+   "brierRaw": 0.2392,
+   "brierCalibrated": 0.2383,
+   "brierCoinFlip": 0.25,
+   "k": 0.76,
+   "platt": {
+    "a": 0.1634,
+    "b": 0.8321
+   },
+   "brierPlatt": 0.2372,
+   "outOfSample": {
+    "season": 2026,
+    "n": 74,
+    "kFromPriorSeasons": 0.73,
+    "brierRaw": 0.2432,
+    "brierCalibrated": 0.24,
+    "plattFromPriorSeasons": {
+     "a": 0.1751,
+     "b": 0.8149
+    },
+    "brierPlatt": 0.2341
+   }
+  },
+  "ryd": {
+   "label": "Rush Yards",
+   "n": 864,
+   "scale": 0.972,
+   "maeModelRaw": 25.28,
+   "maeModel": 25.03,
+   "maeNaive": 24.98,
+   "biasRaw": -1.46,
+   "bias": 0,
+   "overRate": 0.422,
+   "brierUncalibrated": 0.2546,
+   "brierRaw": 0.2514,
+   "brierCalibrated": 0.2464,
+   "brierCoinFlip": 0.25,
+   "k": 0.45,
+   "platt": {
+    "a": -0.2955,
+    "b": 0.3605
+   },
+   "brierPlatt": 0.2414,
+   "outOfSample": {
+    "season": 2026,
+    "n": 128,
+    "kFromPriorSeasons": 0.5,
+    "brierRaw": 0.2621,
+    "brierCalibrated": 0.2514,
+    "plattFromPriorSeasons": {
+     "a": -0.2825,
+     "b": 0.4605
+    },
+    "brierPlatt": 0.2442
+   }
+  },
+  "car": {
+   "label": "Rush Attempts",
+   "n": 609,
+   "scale": 0.984,
+   "maeModelRaw": 4.29,
+   "maeModel": 4.28,
+   "maeNaive": 4.3,
+   "biasRaw": -0.21,
+   "bias": 0,
+   "overRate": 0.447,
+   "brierUncalibrated": 0.2564,
+   "brierRaw": 0.2547,
+   "brierCalibrated": 0.2464,
+   "brierCoinFlip": 0.25,
+   "k": 0.39,
+   "platt": {
+    "a": -0.1806,
+    "b": 0.2658
+   },
+   "brierPlatt": 0.2451,
+   "outOfSample": {
+    "season": 2026,
+    "n": 96,
+    "kFromPriorSeasons": 0.4,
+    "brierRaw": 0.2548,
+    "brierCalibrated": 0.2436,
+    "plattFromPriorSeasons": {
+     "a": -0.1911,
+     "b": 0.3112
+    },
+    "brierPlatt": 0.2477
+   }
+  },
+  "recyd": {
+   "label": "Receiving Yards",
+   "n": 1678,
+   "scale": 0.943,
+   "maeModelRaw": 25.69,
+   "maeModel": 25.14,
+   "maeNaive": 26.6,
+   "biasRaw": -2.74,
+   "bias": -0.02,
+   "overRate": 0.387,
+   "brierUncalibrated": 0.2392,
+   "brierRaw": 0.2333,
+   "brierCalibrated": 0.2333,
+   "brierCoinFlip": 0.25,
+   "k": 1.01,
+   "platt": {
+    "a": -0.3081,
+    "b": 0.8266
+   },
+   "brierPlatt": 0.2286,
+   "outOfSample": {
+    "season": 2026,
+    "n": 289,
+    "kFromPriorSeasons": 1.12,
+    "brierRaw": 0.2349,
+    "brierCalibrated": 0.2363,
+    "plattFromPriorSeasons": {
+     "a": -0.3018,
+     "b": 0.9128
+    },
+    "brierPlatt": 0.2364
+   }
+  },
+  "rec": {
+   "label": "Receptions",
+   "n": 1749,
+   "scale": 0.951,
+   "maeModelRaw": 1.77,
+   "maeModel": 1.75,
+   "maeNaive": 1.83,
+   "biasRaw": -0.2,
+   "bias": 0,
+   "overRate": 0.399,
+   "brierUncalibrated": 0.2388,
+   "brierRaw": 0.2351,
+   "brierCalibrated": 0.234,
+   "brierCoinFlip": 0.25,
+   "k": 0.77,
+   "platt": {
+    "a": -0.2269,
+    "b": 0.5772
+   },
+   "brierPlatt": 0.232,
+   "outOfSample": {
+    "season": 2026,
+    "n": 292,
+    "kFromPriorSeasons": 0.81,
+    "brierRaw": 0.2398,
+    "brierCalibrated": 0.2356,
+    "plattFromPriorSeasons": {
+     "a": -0.2068,
+     "b": 0.6256
+    },
+    "brierPlatt": 0.2363
+   }
+  },
+  "rry": {
+   "label": "Rush+Rec Yds",
+   "n": 1609,
+   "scale": 0.959,
+   "maeModelRaw": 29.91,
+   "maeModel": 29.44,
+   "maeNaive": 30.47,
+   "biasRaw": -2.69,
+   "bias": 0.03,
+   "overRate": 0.41,
+   "brierUncalibrated": 0.2468,
+   "brierRaw": 0.2425,
+   "brierCalibrated": 0.241,
+   "brierCoinFlip": 0.25,
+   "k": 0.68,
+   "platt": {
+    "a": -0.2797,
+    "b": 0.4942
+   },
+   "brierPlatt": 0.2372,
+   "outOfSample": {
+    "season": 2026,
+    "n": 256,
+    "kFromPriorSeasons": 0.79,
+    "brierRaw": 0.253,
+    "brierCalibrated": 0.2475,
+    "plattFromPriorSeasons": {
+     "a": -0.2749,
+     "b": 0.6444
+    },
+    "brierPlatt": 0.246
+   }
+  },
+  "td": {
+   "label": "Rush+Rec TDs",
+   "n": 2053,
+   "scale": 0.815,
+   "maeModelRaw": 0.53,
+   "maeModel": 0.5,
+   "maeNaive": 0.55,
+   "biasRaw": -0.09,
+   "bias": 0,
+   "overRate": 0.296,
+   "brierUncalibrated": 0.2073,
+   "brierRaw": 0.2028,
+   "brierCalibrated": 0.2025,
+   "brierCoinFlip": 0.25,
+   "k": 0.92,
+   "platt": {
+    "a": -0.2889,
+    "b": 0.6667
+   },
+   "brierPlatt": 0.2012,
+   "outOfSample": {
+    "season": 2026,
+    "n": 351,
+    "kFromPriorSeasons": 0.89,
+    "brierRaw": 0.1738,
+    "brierCalibrated": 0.1762,
+    "plattFromPriorSeasons": {
+     "a": -0.2934,
+     "b": 0.6233
+    },
+    "brierPlatt": 0.1738
+   }
+  },
+  "fan": {
+   "label": "Fantasy Score",
+   "n": 2476,
+   "scale": 0.954,
+   "maeModelRaw": 6.2,
+   "maeModel": 6.11,
+   "maeNaive": 6.32,
+   "biasRaw": -0.6,
+   "bias": 0.01,
+   "overRate": 0.418,
+   "brierUncalibrated": 0.2485,
+   "brierRaw": 0.244,
+   "brierCalibrated": 0.2419,
+   "brierCoinFlip": 0.25,
+   "k": 0.64,
+   "platt": {
+    "a": -0.253,
+    "b": 0.4837
+   },
+   "brierPlatt": 0.2387,
+   "outOfSample": {
+    "season": 2026,
+    "n": 396,
+    "kFromPriorSeasons": 0.66,
+    "brierRaw": 0.242,
+    "brierCalibrated": 0.239,
+    "plattFromPriorSeasons": {
+     "a": -0.2658,
+     "b": 0.493
+    },
+    "brierPlatt": 0.2401
+   }
+  }
+ },
+ "calibration": {
+  "raw": [
+   {
+    "from": 0.5,
+    "to": 0.55,
+    "n": 3669,
+    "predicted": 0.525,
+    "actual": 0.53
+   },
+   {
+    "from": 0.55,
+    "to": 0.6,
+    "n": 3191,
+    "predicted": 0.574,
+    "actual": 0.55
+   },
+   {
+    "from": 0.6,
+    "to": 0.65,
+    "n": 2597,
+    "predicted": 0.624,
+    "actual": 0.616
+   },
+   {
+    "from": 0.65,
+    "to": 0.7,
+    "n": 1906,
+    "predicted": 0.674,
+    "actual": 0.634
+   },
+   {
+    "from": 0.7,
+    "to": 1,
+    "n": 2402,
+    "predicted": 0.765,
+    "actual": 0.702
+   }
+  ],
+  "calibrated": [
+   {
+    "from": 0.5,
+    "to": 0.55,
+    "n": 3519,
+    "predicted": 0.525,
+    "actual": 0.54
+   },
+   {
+    "from": 0.55,
+    "to": 0.6,
+    "n": 3567,
+    "predicted": 0.575,
+    "actual": 0.569
+   },
+   {
+    "from": 0.6,
+    "to": 0.65,
+    "n": 2895,
+    "predicted": 0.623,
+    "actual": 0.642
+   },
+   {
+    "from": 0.65,
+    "to": 0.7,
+    "n": 1695,
+    "predicted": 0.674,
+    "actual": 0.693
+   },
+   {
+    "from": 0.7,
+    "to": 1,
+    "n": 2089,
+    "predicted": 0.756,
+    "actual": 0.742
+   }
+  ]
+ },
+ "breakEven2Pick": {
+  "threshold": 0.577,
+  "n": 8237,
+  "hitRate": 0.669,
+  "predicted": 0.661
+ },
+ "outOfSample": {
+  "season": 2026,
+  "n": 2246,
+  "note": "Calibration fitted on 2025 only, then applied to 2026 games it never saw.",
+  "brierRaw": 0.2333,
+  "brierCalibrated": 0.2297,
+  "brierCoinFlip": 0.25,
+  "calibration": [
+   {
+    "from": 0.5,
+    "to": 0.55,
+    "n": 416,
+    "predicted": 0.526,
+    "actual": 0.495
+   },
+   {
+    "from": 0.55,
+    "to": 0.6,
+    "n": 500,
+    "predicted": 0.575,
+    "actual": 0.526
+   },
+   {
+    "from": 0.6,
+    "to": 0.65,
+    "n": 441,
+    "predicted": 0.623,
+    "actual": 0.662
+   },
+   {
+    "from": 0.65,
+    "to": 0.7,
+    "n": 344,
+    "predicted": 0.674,
+    "actual": 0.695
+   },
+   {
+    "from": 0.7,
+    "to": 1,
+    "n": 545,
+    "predicted": 0.761,
+    "actual": 0.712
+   }
+  ],
+  "breakEven2Pick": {
+   "threshold": 0.577,
+   "n": 1561,
+   "hitRate": 0.671,
+   "predicted": 0.677
+  }
+ }
+}

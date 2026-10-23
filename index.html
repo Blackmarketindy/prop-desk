@@ -152,6 +152,7 @@ tr.click:hover td { background: var(--surface-2) }
 .legs { display: grid; gap: 8px }
 .leg { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px }
 .leg .who { min-width: 0; display: grid; gap: 2px }
+.leg .legx { grid-column: 1 / -1; display: grid; gap: 8px; padding-top: 4px; border-top: 1px dashed var(--line) }
 .leg .who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .payout { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 14px; border-radius: 12px; background: var(--navy); color: var(--on-navy) }
 .payout b { font: 600 38px/1 var(--f-display); color: var(--gold); padding-top: 4px }
@@ -218,6 +219,7 @@ footer { font-size: 13px; color: var(--muted); padding-block: 0 30px; display: g
       <div class="panel" id="recBest"></div>
       <div class="panel" id="recMore"></div>
       <div class="panel" id="recLess"></div>
+      <div class="panel" id="recModel"></div>
     </div>
   </section>
 
@@ -277,6 +279,7 @@ footer { font-size: 13px; color: var(--muted); padding-block: 0 30px; display: g
 </footer>
 </div>
 
+<script src="model.js"></script>
 <script>
 (() => {
 'use strict';
@@ -295,25 +298,8 @@ const LIGHT_TEAM = new Set(['NO', 'PIT']);
 const tm = t => `<span class="tm" style="background:${TEAM_COLOR[t] || '#0b2265'};color:${LIGHT_TEAM.has(t) ? '#111111' : '#ffffff'}" title="${esc(TEAM[t] || t)}">${esc(t)}</span>`;
 const TEAM = {ARI:'Cardinals',ATL:'Falcons',BAL:'Ravens',BUF:'Bills',CAR:'Panthers',CHI:'Bears',CIN:'Bengals',CLE:'Browns',DAL:'Cowboys',DEN:'Broncos',DET:'Lions',GB:'Packers',HOU:'Texans',IND:'Colts',JAX:'Jaguars',KC:'Chiefs',LA:'Rams',LAC:'Chargers',LV:'Raiders',MIA:'Dolphins',MIN:'Vikings',NE:'Patriots',NO:'Saints',NYG:'Giants',NYJ:'Jets',PHI:'Eagles',PIT:'Steelers',SEA:'Seahawks',SF:'49ers',TB:'Buccaneers',TEN:'Titans',WAS:'Commanders'};
 
-// ---------- markets ----------
-const fantasy = g => 0.04*g.pyd + 4*g.ptd - g.int + 0.1*g.ryd + 6*g.rtd + g.rec + 0.1*g.recyd + 6*g.rectd - g.fl + 2*g.two + 6*g.sttd;
-const ALL = ['QB','RB','WR','TE'];
-const MARKETS = [
-  {k:'pyd',  label:'Pass Yards',       pos:['QB'], f:g=>g.pyd, cv:.28, kind:'cont', env:.25},
-  {k:'ptd',  label:'Pass TDs',         pos:['QB'], f:g=>g.ptd, kind:'pois', env:.5},
-  {k:'cmp',  label:'Pass Completions', pos:['QB'], f:g=>g.cmp, cv:.22, kind:'cont', env:.15},
-  {k:'att',  label:'Pass Attempts',    pos:['QB'], f:g=>g.att, cv:.18, kind:'cont', env:.1},
-  {k:'int',  label:'Interceptions',    pos:['QB'], f:g=>g.int, kind:'pois', env:0},
-  {k:'pry',  label:'Pass+Rush Yds',    pos:['QB'], f:g=>g.pyd+g.ryd, cv:.26, kind:'cont', env:.25},
-  {k:'ryd',  label:'Rush Yards',       pos:['QB','RB','WR'], f:g=>g.ryd, cv:.5, kind:'cont', env:.25},
-  {k:'car',  label:'Rush Attempts',    pos:['QB','RB'], f:g=>g.car, cv:.33, kind:'cont', env:.15},
-  {k:'recyd',label:'Receiving Yards',  pos:['RB','WR','TE'], f:g=>g.recyd, cv:.55, kind:'cont', env:.25},
-  {k:'rec',  label:'Receptions',       pos:['RB','WR','TE'], f:g=>g.rec, cv:.4, kind:'cont', env:.15},
-  {k:'rry',  label:'Rush+Rec Yds',     pos:['RB','WR','TE'], f:g=>g.ryd+g.recyd, cv:.4, kind:'cont', env:.25},
-  {k:'td',   label:'Rush+Rec TDs',     pos:ALL, f:g=>g.rtd+g.rectd, kind:'pois', env:.5},
-  {k:'fan',  label:'Fantasy Score',    pos:ALL, f:fantasy, cv:.42, kind:'cont', env:.4},
-];
-const MK = Object.fromEntries(MARKETS.map(m => [m.k, m]));
+// ---------- markets (model.js) ----------
+const {MARKETS, MK, ALL} = PropModel;
 const ALIASES = [
   ['pass yards','pyd'],['passing yards','pyd'],['pass yds','pyd'],['pass yd','pyd'],
   ['pass tds','ptd'],['passing tds','ptd'],['pass td','ptd'],['passing touchdowns','ptd'],
@@ -330,91 +316,15 @@ const ALIASES = [
 const DEFAULT_PAYOUT = {2:3, 3:6, 4:10, 5:20, 6:37.5};
 
 // ---------- state ----------
-let D = null, P = [], byId = {}, defAvg = {}, curWeek = null, impAvg = 22;
+let D = null, P = [], byId = {}, curWeek = null;
 let slip = store.get('pd.slip', []);
 let payouts = store.get('pd.payouts', DEFAULT_PAYOUT);
 let picks = [];           // saved picks (db or local)
 let db = null, uid = null, picksMode = 'local';
 
-// ---------- math ----------
-function erf(x) { const s = Math.sign(x); x = Math.abs(x); const t = 1/(1+0.3275911*x); const y = 1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x); return s*y; }
-const Phi = z => 0.5*(1+erf(z/Math.SQRT2));
-function poisPmf(k, l) { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l/i; return p; }
-function probs(m, mu, sd, line) {
-  const whole = Math.abs(line - Math.round(line)) < 1e-9;
-  if (m.kind === 'pois') {
-    const lam = Math.max(mu, 0.02);
-    const k = Math.floor(line);
-    let cdf = 0; for (let i = 0; i <= k; i++) cdf += poisPmf(i, lam);
-    const push = whole ? poisPmf(k, lam) : 0;
-    return {more: 1 - cdf, less: cdf - push, push};
-  }
-  if (whole) {
-    const hi = Phi((line + .5 - mu)/sd), lo = Phi((line - .5 - mu)/sd);
-    return {more: 1 - hi, less: lo, push: hi - lo};
-  }
-  const c = Phi((line - mu)/sd);
-  return {more: 1 - c, less: c, push: 0};
-}
-const clip = (v, a, b) => Math.min(b, Math.max(a, v));
-
-function nextGame(team) {
-  const up = D.sched.filter(s => s.hs == null && (s.home === team || s.away === team)).sort((a, b) => a.wk - b.wk || a.date.localeCompare(b.date));
-  const g = up[0]; if (!g) return null;
-  const home = g.home === team, opp = home ? g.away : g.home;
-  let imp = null;
-  if (g.total != null && g.spread != null) imp = home ? (g.total + g.spread)/2 : (g.total - g.spread)/2;
-  return {g, home, opp, imp, bye: g.wk !== curWeek};
-}
-function defFor(opp, pos, m) {
-  const d = D.def[opp]; if (!d || !d[pos]) return null;
-  return {val: m.f(d[pos]), gp: d.gp};
-}
-function project(pl, m) {
-  const xs = pl.games.map(g => m.f(g));
-  const n = xs.length;
-  let sw = 0, swx = 0;
-  xs.forEach((x, i) => { const w = Math.pow(0.82, n - 1 - i); sw += w; swx += w * x; });
-  const m26 = n ? swx / sw : null;
-  let base = m26, prior = null, k = 0;
-  if (pl.prevObj) {
-    prior = m.f(pl.prevObj); k = Math.min(3, pl.prevN / 5);
-    base = n ? (swx + k * prior) / (sw + k) : prior;
-  }
-  if (base == null) return null;
-  const ng = nextGame(pl.t);
-  let fMatch = 1, mRank = null, allowed = null;
-  if (ng) {
-    const d = defFor(ng.opp, pl.p, m), avg = defAvg[pl.p + '|' + m.k];
-    if (d && avg > 0) {
-      allowed = d.val;
-      const ratio = d.val / avg;
-      fMatch = clip(1 + (ratio - 1) * 0.6 * d.gp / (d.gp + 6), 0.85, 1.15);
-      if (m.k === 'int') fMatch = clip(1 + (ratio - 1) * 0.4 * d.gp / (d.gp + 6), 0.85, 1.15);
-      const all = Object.keys(D.def).map(t => defFor(t, pl.p, m)?.val ?? 0).sort((a, b) => b - a);
-      mRank = all.indexOf(d.val) + 1;
-    }
-  }
-  let fEnv = 1;
-  if (ng && ng.imp != null && m.env) fEnv = clip(1 + (ng.imp / impAvg - 1) * m.env, 0.88, 1.12);
-  const mu = base * fMatch * fEnv;
-  let sd = null;
-  if (m.kind === 'cont') {
-    const mean = n ? xs.reduce((a, b) => a + b, 0) / n : mu;
-    const s2 = n > 1 ? xs.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1) : 0;
-    const t2 = (m.cv * Math.max(mu, 1)) ** 2;
-    sd = Math.max(Math.sqrt(((n - 1 > 0 ? n - 1 : 0) * s2 + 4 * t2) / (Math.max(n - 1, 0) + 4)), 0.8);
-  }
-  return {mu, sd, xs, n, m26, prior, k, base, fMatch, fEnv, ng, mRank, allowed};
-}
-function evaluate(pl, m, line) {
-  const pr = project(pl, m); if (!pr) return null;
-  const p = probs(m, pr.mu, pr.sd, line);
-  const over = pr.xs.filter(x => x > line).length, under = pr.xs.filter(x => x < line).length;
-  const l5 = pr.xs.slice(-5), l5o = l5.filter(x => x > line).length;
-  const side = p.more >= p.less ? 'more' : 'less';
-  return {...pr, p, side, pSide: Math.max(p.more, p.less), over, under, l5n: l5.length, l5o};
-}
+// ---------- model (model.js) ----------
+let model = null, nextGame, project, evaluate, targetLine;
+let calibration = null; // backtest.json, when present
 
 // ---------- data load ----------
 async function load() {
@@ -423,24 +333,12 @@ async function load() {
   catch { $('#fresh').innerHTML = '<span class="err">Could not load the data file. Reload the page to try again.</span>'; return; }
   if (!res.ok) { $('#fresh').innerHTML = '<span class="err">The data file is missing (' + res.status + '). Ask Claude to rebuild Prop Desk.</span>'; return; }
   D = await res.json();
-  const F = D.meta.fields;
-  P = D.players.map(pl => {
-    const games = pl.g.map(r => { const o = {wk: r[0], opp: r[1], home: r[2]}; F.forEach((f, i) => o[f] = r[3 + i]); return o; });
-    let prevObj = null, prevN = 0;
-    if (pl.prev) { prevN = pl.prev[0]; prevObj = {}; F.forEach((f, i) => prevObj[f] = pl.prev[1 + i]); }
-    return {id: pl.id, n: pl.n, p: pl.p, t: pl.t, games, prevObj, prevN, key: norm(pl.n)};
-  });
-  // Defensive vectors to objects
-  Object.values(D.def).forEach(d => ALL.forEach(pos => { if (Array.isArray(d[pos])) { const o = {}; F.forEach((f, i) => o[f] = d[pos][i]); d[pos] = o; } }));
-  MARKETS.forEach(m => ALL.forEach(pos => {
-    const vals = Object.values(D.def).map(d => d[pos] ? m.f(d[pos]) : 0);
-    defAvg[pos + '|' + m.k] = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
-  }));
+  try { const b = await fetch('backtest.json?t=' + Date.now(), {cache: 'no-store'}); if (b.ok) calibration = await b.json(); } catch {}
+  model = PropModel.create(D, {now: Date.now(), calib: calibration});
+  ({nextGame, project, evaluate, targetLine} = model);
+  curWeek = model.curWeek;
+  P = model.players.map(pl => Object.assign(pl, {key: norm(pl.n)}));
   byId = Object.fromEntries(P.map(p => [p.id, p]));
-  const unplayed = D.sched.filter(s => s.hs == null);
-  curWeek = unplayed.length ? Math.min(...unplayed.map(s => s.wk)) : null;
-  const wkGames = unplayed.filter(s => s.wk === curWeek && s.total != null);
-  if (wkGames.length) impAvg = wkGames.reduce((a, s) => a + s.total, 0) / wkGames.length / 2;
   // Players worth listing: have played at least once; sort by recent usage
   P.sort((a, b) => a.n.localeCompare(b.n));
   $('#pList').innerHTML = P.map(p => `<option value="${esc(p.n)} (${p.t} ${p.p})"></option>`).join('');
@@ -512,7 +410,9 @@ function renderCheck() {
   $('#lineHint').innerHTML = cur.example ? 'Example line shown. Type the line exactly as PrizePicks shows it.' : usingSuggested ? `No line typed yet, so a sample line of <b>${line}</b> is shown.` : 'Type the line exactly as PrizePicks shows it.';
   const e = evaluate(pl, m, line);
   const ng = e.ng, inj = D.inj[pl.id];
-  const injPill = injuryPill(inj);
+  const injPill = injuryPill(pl, inj, ng);
+  const locked = !!(ng && ng.started);
+  const typed = !cur.example && cur.line != null;
   const sideLabel = e.side === 'more' ? 'More' : 'Less';
   const be = breakeven(2);
   const edgeNote = e.pSide >= be ? `Clears the ${pct(be)} a 2-pick Power Play needs per leg.` : `Below the ${pct(be)} a 2-pick Power Play needs per leg.`;
@@ -524,15 +424,15 @@ function renderCheck() {
     <div class="panel verdict">
       <div class="head"><div class="row" style="gap:8px">${tm(pl.t)}<h3>${esc(pl.n)} · ${esc(m.label)}</h3></div>${injPill}</div>
       <div class="projline"><span class="big">${fmt1(e.mu)}</span><span class="vs">proj · line ${line}</span></div>
-      <div class="row"><span class="pill ${e.side}">Lean ${sideLabel} · ${pct(e.pSide)}</span>${e.n < 3 ? '<span class="pill warn">Only ' + e.n + ' game' + (e.n === 1 ? '' : 's') + ' this season</span>' : ''}${ng && ng.bye ? '<span class="pill warn">Bye in Week ' + curWeek + '</span>' : ''}</div>
+      <div class="row"><span class="pill ${e.side}">Lean ${sideLabel} · ${pct(e.pSide)}</span>${e.n < 3 ? '<span class="pill warn">Only ' + e.n + ' game' + (e.n === 1 ? '' : 's') + ' this season</span>' : ''}${ng && ng.bye ? '<span class="pill warn">Bye in Week ' + curWeek + '</span>' : ''}${locked ? '<span class="pill less">Game started · lines locked</span>' : ''}</div>
       <div>
         <div class="meter" role="img" aria-label="Chance of More ${pct(e.p.more)}, Less ${pct(e.p.less)}"><i style="width:${(e.p.more * 100).toFixed(1)}%"></i></div>
         <div class="meter-l num"><span style="color:var(--more)">More ${pct(e.p.more)}</span>${e.p.push > 0.005 ? `<span class="muted">Push ${pct(e.p.push)}</span>` : ''}<span style="color:var(--less)">Less ${pct(e.p.less)}</span></div>
       </div>
       <p class="small muted">${edgeNote}</p>
       <div class="row">
-        <button class="btn more" data-add="more">+ More to slip</button>
-        <button class="btn less" data-add="less">+ Less to slip</button>
+        <button class="btn more" data-add="more"${locked ? ' disabled' : ''}>+ More to slip</button>
+        <button class="btn less" data-add="less"${locked ? ' disabled' : ''}>+ Less to slip</button>
       </div>
     </div>
     <div class="panel">
@@ -552,18 +452,39 @@ function renderCheck() {
       <div><b>Defense</b><br>${esc(matchTxt)}</div>
       <div><b>Game script</b><br>${esc(envTxt)}</div>
     </div>
-    <div class="build"><span>Recent form <b>${e.m26 != null ? fmt1(e.m26) : '—'}</b> (${e.n} gm, recent weighted)</span>${e.prior != null ? `<span>2025 prior <b>${fmt1(e.prior)}</b> (weight ${fmt1(e.k)} gm)</span>` : ''}<span>Blended <b>${fmt1(e.base)}</b></span><span>Defense ×<b>${e.fMatch.toFixed(2)}</b></span><span>Team total ×<b>${e.fEnv.toFixed(2)}</b></span><span>Projection <b>${fmt1(e.mu)}</b></span></div>
-    ${inj ? `<p class="note">Injury report, Week ${D.meta.injuryWeek}: ${esc(inj.s || 'No game status')}${inj.pr ? ' · ' + esc(inj.pr) : ''}${inj.inj ? ' (' + esc(inj.inj) + ')' : ''}. Check the final report and inactives before kickoff.</p>` : ''}
+    <div class="build"><span>Recent form <b>${e.m26 != null ? fmt1(e.m26) : '—'}</b> (${e.n} gm, recent weighted)</span>${e.prior != null ? `<span>2025 prior <b>${fmt1(e.prior)}</b> (weight ${fmt1(e.k)} gm)</span>` : ''}<span>Blended <b>${fmt1(e.base)}</b></span><span>Defense ×<b>${e.fMatch.toFixed(2)}</b></span><span>Team total ×<b>${e.fEnv.toFixed(2)}</b></span>${e.fHist !== 1 ? `<span>History adj ×<b>${e.fHist.toFixed(2)}</b></span>` : ''}<span>Projection <b>${fmt1(e.mu)}</b></span></div>
+    <p class="note">${injNote(pl, inj, ng)}</p>
   </div>`;
-  $('#checkOut').querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addLeg(pl, m, line, b.dataset.add, e)));
+  $('#checkOut').querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addLeg(pl, m, line, b.dataset.add, e, {confirmed: typed, src: 'check'})));
 }
-function injuryPill(inj) {
-  if (!inj) return '<span class="pill neutral">Not on injury report</span>';
-  if (inj.s === 'Out' || inj.s === 'Doubtful') return `<span class="pill less">${esc(inj.s)}</span>`;
-  if (inj.s === 'Questionable') return '<span class="pill warn">Questionable</span>';
-  if (inj.pr && /Did Not/.test(inj.pr)) return '<span class="pill warn">DNP at practice</span>';
-  if (inj.pr && /Limited/.test(inj.pr)) return '<span class="pill warn">Limited at practice</span>';
+// Injury status for the player's next game. A missing entry only means "healthy" when that team's
+// report for the game week is actually in the data.
+function injuryState(pl, inj, ng) {
+  const wk = ng ? ng.g.wk : null, teamWk = D.meta.injuryTeamWeek ? D.meta.injuryTeamWeek[pl.t] : D.meta.injuryWeek;
+  if (wk == null) return {k: 'none'};
+  if (inj && inj.wk === wk) return {k: 'listed', inj, wk};
+  if (teamWk != null && teamWk >= wk) return {k: 'clear', wk};
+  return {k: 'pending', wk, last: inj && inj.wk ? inj : null};
+}
+function injuryPill(pl, inj, ng) {
+  const st = injuryState(pl, inj, ng);
+  if (st.k === 'none') return '';
+  if (st.k === 'pending') return `<span class="pill warn">No Week ${st.wk} report yet</span>`;
+  if (st.k === 'clear') return `<span class="pill neutral">Not on Week ${st.wk} report</span>`;
+  const i = st.inj;
+  if (i.s === 'Out' || i.s === 'Doubtful') return `<span class="pill less">${esc(i.s)}</span>`;
+  if (i.s === 'Questionable') return '<span class="pill warn">Questionable</span>';
+  if (i.pr && /Did Not/.test(i.pr)) return '<span class="pill warn">DNP at practice</span>';
+  if (i.pr && /Limited/.test(i.pr)) return '<span class="pill warn">Limited at practice</span>';
   return '<span class="pill neutral">On report · full practice</span>';
+}
+function injNote(pl, inj, ng) {
+  const st = injuryState(pl, inj, ng);
+  if (st.k === 'none') return 'No game left on the schedule.';
+  if (st.k === 'pending') return `${esc(TEAM[pl.t] || pl.t)} have not posted a Week ${st.wk} injury report in the data yet${st.last ? `; last listed Week ${st.last.wk}: ${esc(st.last.s || st.last.pr || 'on report')}` : ''}. Check before you pick.`;
+  if (st.k === 'clear') return `Not listed on the ${esc(TEAM[pl.t] || pl.t)} Week ${st.wk} injury report. Still check game-day inactives.`;
+  const i = st.inj;
+  return `Week ${st.wk} injury report: ${esc(i.s || 'no game status yet')}${i.pr ? ' · ' + esc(i.pr) : ''}${i.inj ? ' (' + esc(i.inj) + ')' : ''}. Check the final report and inactives before kickoff.`;
 }
 const ordinal = n => n + (['th','st','nd','rd'][(n % 100 - 20) % 10] || ['th','st','nd','rd'][n % 100] || 'th');
 function spreadTxt(ng) { const s = ng.g.spread; if (s == null) return '—'; const fav = s > 0 ? ng.g.home : ng.g.away; return s === 0 ? 'pick’em' : `${fav} −${Math.abs(s)}`; }
@@ -610,9 +531,10 @@ function logChart(pl, m, line, e) {
 
 // ---------- slip ----------
 function breakeven(n) { const mult = payouts[n] || DEFAULT_PAYOUT[n] || 3; return Math.pow(1 / mult, 1 / n); }
-function addLeg(pl, m, line, side, e) {
+function addLeg(pl, m, line, side, e, opts = {}) {
+  if (e.ng && e.ng.started) { flash(`${pl.n}'s game has started, so PrizePicks has locked this line.`); return; }
   const p = side === 'more' ? e.p.more : e.p.less;
-  const leg = {id: pl.id, name: pl.n, team: pl.t, pos: pl.p, mk: m.k, line, side, p, wk: e.ng ? e.ng.g.wk : null, gid: e.ng ? e.ng.g.id : null};
+  const leg = {id: pl.id, name: pl.n, team: pl.t, pos: pl.p, mk: m.k, line, side, p, wk: e.ng ? e.ng.g.wk : null, gid: e.ng ? e.ng.g.id : null, confirmed: !!opts.confirmed, src: opts.src || 'check'};
   slip = slip.filter(l => !(l.id === leg.id && l.mk === leg.mk));
   if (slip.length >= 6) { flash('A slip holds up to 6 picks. Remove one first.'); return; }
   slip.push(leg); store.set('pd.slip', slip); renderSlip(); flash(`Added ${pl.n} ${side === 'more' ? 'More' : 'Less'} ${line} ${m.label}`);
@@ -621,18 +543,25 @@ function flash(msg) {
   let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; t.setAttribute('role', 'status'); t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px;z-index:20;max-width:calc(100% - 32px)'; document.body.appendChild(t); }
   t.textContent = msg; t.hidden = false; clearTimeout(flash.t); flash.t = setTimeout(() => t.hidden = true, 2200);
 }
-function legProb(l) {
+// A leg is re-priced only while its own game is still upcoming. Once that game starts or finishes,
+// the leg keeps the probability it had, instead of drifting to the player's next opponent.
+function legState(l) {
   const pl = byId[l.id], m = MK[l.mk];
-  if (!pl || !m) return l.p;
-  const e = evaluate(pl, m, l.line); if (!e) return l.p;
-  return l.side === 'more' ? e.p.more : e.p.less;
+  if (!pl || !m) return {p: l.p, locked: true, reason: 'Player not in data'};
+  const ng = nextGame(pl.t);
+  if (!ng || (l.gid && ng.g.id !== l.gid)) return {p: l.p, locked: true, reason: 'Game over'};
+  if (ng.started) return {p: l.p, locked: true, reason: 'Game started'};
+  const e = evaluate(pl, m, l.line); if (!e) return {p: l.p, locked: false};
+  return {p: l.side === 'more' ? e.p.more : e.p.less, locked: false};
 }
+const legProb = l => legState(l).p;
 function renderSlip() {
   $('#slipCount').hidden = !slip.length; $('#slipCount').textContent = slip.length;
   updateDock();
   const el = $('#slipOut');
   if (!slip.length) { el.innerHTML = `<h2>Slip</h2><div class="empty"><p>No picks yet.</p><p class="small">Open Prop check or Line board and tap “+ More” or “+ Less” to build a slip.</p></div>`; return; }
-  const n = slip.length, ps = slip.map(legProb);
+  const n = slip.length, st = slip.map(legState), ps = st.map(x => x.p);
+  const unconfirmed = slip.filter(l => !l.confirmed).length, lockedN = st.filter(x => x.locked).length;
   const all = ps.reduce((a, b) => a * b, 1);
   const mult = payouts[n] ?? '';
   const teams = new Set(slip.map(l => l.team));
@@ -642,8 +571,11 @@ function renderSlip() {
     <div class="head"><h2>${n}-pick Power Play</h2><button class="btn ghost" id="slipClear">Clear slip</button></div>
     <div class="legs">${slip.map((l, i) => `
       <div class="leg"><div class="who"><div class="row" style="gap:8px;flex-wrap:nowrap">${tm(l.team)}<b>${esc(l.name)}</b></div><span class="small muted">${esc(l.team)} · ${esc(MK[l.mk]?.label || l.mk)} · Wk ${l.wk ?? '—'}</span></div>
-      <span class="pill ${l.side}">${l.side === 'more' ? 'More' : 'Less'} ${l.line} · ${pct(ps[i])}</span>
-      <button class="btn ghost" data-rm="${i}" aria-label="Remove ${esc(l.name)}">Remove</button></div>`).join('')}
+      <span class="pill ${st[i].locked ? 'neutral' : l.side}">${l.side === 'more' ? 'More' : 'Less'} ${l.line} · ${pct(ps[i])}</span>
+      <button class="btn ghost" data-rm="${i}" aria-label="Remove ${esc(l.name)}">Remove</button>
+      ${st[i].locked ? `<div class="legx small" style="color:var(--less)">${esc(st[i].reason)}: this pick can no longer be entered. Remove it to save the slip.</div>` :
+        !l.confirmed ? `<div class="legx"><span class="small"><b>Confirm the line PrizePicks is offering.</b> ${l.src === 'target' ? 'This number is the model’s target, not a posted line.' : 'This line came from an example or a sample, not from you.'}</span>
+        <div class="row" style="gap:8px"><input class="line" style="width:110px;min-height:40px;font-size:24px" inputmode="decimal" id="legLine${i}" value="${l.line}" aria-label="PrizePicks line for ${esc(l.name)}"><button class="btn sm primary" data-confirm="${i}">Confirm line</button></div></div>` : ''}</div>`).join('')}
     </div>
     ${n < 2 ? '<p class="note">PrizePicks needs at least 2 picks.</p>' : ''}
     ${n >= 2 && teams.size < 2 ? '<p class="note">PrizePicks requires players from at least 2 different teams.</p>' : ''}
@@ -655,11 +587,19 @@ function renderSlip() {
       <div class="stat"><span class="k">Break-even per pick</span><span class="v">${pct(breakeven(n))}</span></div>
     </div>
     <p class="small muted">Set the payout to what your PrizePicks app shows; payouts change by state and promotion.</p>
-    <div class="row"><button class="btn primary" id="slipSave">Save to My picks</button><span class="small muted" id="saveMsg"></span></div>` : ''}`;
+    <div class="row"><button class="btn primary" id="slipSave"${unconfirmed || lockedN ? ' disabled' : ''}>Save to My picks</button><span class="small muted" id="saveMsg">${lockedN ? 'Remove locked picks to save.' : unconfirmed ? `Confirm ${unconfirmed} line${unconfirmed === 1 ? '' : 's'} to save.` : 'Saves the slip with today’s model chances.'}</span></div>` : ''}`;
   el.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { slip.splice(+b.dataset.rm, 1); store.set('pd.slip', slip); renderSlip(); }));
   $('#slipClear')?.addEventListener('click', () => { slip = []; store.set('pd.slip', slip); renderSlip(); });
   $('#payIn')?.addEventListener('change', () => { const v = parseFloat($('#payIn').value); if (isFinite(v) && v > 1) { payouts = {...payouts, [n]: v}; store.set('pd.payouts', payouts); renderSlip(); renderRecs(); } });
   $('#slipSave')?.addEventListener('click', saveSlip);
+  el.querySelectorAll('[data-confirm]').forEach(b => b.addEventListener('click', () => {
+    const i = +b.dataset.confirm, l = slip[i], v = parseFloat($('#legLine' + i).value);
+    if (!isFinite(v) || v < 0) { flash('Enter the line as a number, like 24.5'); return; }
+    l.line = v; l.confirmed = true;
+    const pl = byId[l.id], m = MK[l.mk], e = pl && m ? evaluate(pl, m, v) : null;
+    if (e) l.p = l.side === 'more' ? e.p.more : e.p.less;
+    store.set('pd.slip', slip); renderSlip();
+  }));
 }
 
 function updateDock() {
@@ -711,15 +651,15 @@ function runBoard() {
       const inj = D.inj[r.pl.id];
       return `<tr class="click" data-open="${i}"><td><div class="row" style="gap:8px;flex-wrap:nowrap">${tm(r.pl.t)}<b>${esc(r.pl.n)}</b></div></td><td>${r.m.label}</td><td class="r">${r.line}</td><td class="r"><b>${fmt1(r.e.mu)}</b></td>
       <td><span class="pill ${r.e.side}">${r.e.side === 'more' ? 'More' : 'Less'} ${pct(r.e.pSide)}</span></td><td class="r">${r.e.l5o}/${r.e.l5n}</td><td class="r">${r.e.mRank ? ordinal(r.e.mRank) : '—'}</td>
-      <td>${inj && inj.s ? `<span class="pill ${inj.s === 'Questionable' ? 'warn' : 'less'}">${esc(inj.s)}</span>` : r.e.ng && r.e.ng.bye ? '<span class="pill warn">Bye</span>' : ''}</td>
-      <td><button class="btn sm soft-${r.e.side}" data-addb="${i}">+ Slip</button></td></tr>`; }).join('')}</tbody></table></div>
+      <td>${r.e.ng && r.e.ng.started ? '<span class="pill neutral">Locked</span>' : r.e.ng && r.e.ng.bye ? '<span class="pill warn">Bye</span>' : injuryPill(r.pl, inj, r.e.ng)}</td>
+      <td><button class="btn sm soft-${r.e.side}" data-addb="${i}"${r.e.ng && r.e.ng.started ? ' disabled' : ''}>+ Slip</button></td></tr>`; }).join('')}</tbody></table></div>
   <p class="small muted">Def rank: where the opponent ranks in that stat allowed to the position (1st = gives up the most). Tap a row for the full breakdown.</p>
   ${bad.length ? `<div class="note">${bad.map(b => `Skipped “${esc(b.raw)}”: ${esc(b.err)}.`).join('<br>')}</div>` : ''}`;
   el.querySelectorAll('[data-open]').forEach(tr => tr.addEventListener('click', ev => {
     if (ev.target.closest('button')) return;
     const r = boardRows[+tr.dataset.open]; setPlayer(r.pl, r.m.k, r.line, false); showTab('check');
   }));
-  el.querySelectorAll('[data-addb]').forEach(b => b.addEventListener('click', () => { const r = boardRows[+b.dataset.addb]; addLeg(r.pl, r.m, r.line, r.e.side, r.e); }));
+  el.querySelectorAll('[data-addb]').forEach(b => b.addEventListener('click', () => { const r = boardRows[+b.dataset.addb]; addLeg(r.pl, r.m, r.line, r.e.side, r.e, {confirmed: $('#boardText').value !== EXAMPLE_BOARD, src: 'board'}); }));
   renderRecs();
 }
 
@@ -736,10 +676,10 @@ function renderSlate() {
     const done = g.hs != null;
     const hi = g.total != null && g.spread != null ? (g.total + g.spread) / 2 : null, ai = hi != null ? g.total - hi : null;
     const out = [...injList(g.away), ...injList(g.home)].filter(x => !x.startsWith('Player'));
-    return `<div class="game"><div class="teams">${tm(g.away)}<span class="muted" style="font-size:18px">@</span>${tm(g.home)}</div><div class="small muted" style="text-align:right">${done ? 'Final' : esc(fmtKick(g))}</div>
+    return `<div class="game"><div class="teams">${tm(g.away)}<span class="muted" style="font-size:18px">@</span>${tm(g.home)}</div><div class="small muted" style="text-align:right">${done ? 'Final' : PropModel.kickoffMs(g) <= model.now ? '<b style="color:var(--less)">In progress</b>' : esc(fmtKick(g))}</div>
       <div class="small num" style="grid-column:1/-1">${done ? `${g.away} ${g.as}, ${g.home} ${g.hs}` : g.total != null ? `Total ${g.total} · ${spreadTxt({g, home: true})} · implied ${g.away} ${fmt1(ai)}, ${g.home} ${fmt1(hi)}` : 'No line yet'}${g.roof ? ' · ' + esc(g.roof) : ''}</div>
       ${out.length && !done ? `<div class="small" style="grid-column:1/-1;color:var(--warn)">${out.join(', ')}</div>` : ''}</div>`; }).join('')}</div>
-  <p class="small muted">Injury names show skill players listed Out, Doubtful or Questionable on the Week ${D.meta.injuryWeek} report.</p>`;
+  <p class="small muted">Injury names show skill players listed Out, Doubtful or Questionable on each team’s latest report.</p>`;
 }
 
 // ---------- my picks ----------
@@ -763,9 +703,10 @@ async function initPicks() {
 }
 async function saveSlip() {
   const n = slip.length; if (n < 2) return;
+  if (slip.some(l => !l.confirmed || legState(l).locked)) { renderSlip(); return; }
   const slipId = 's' + Date.now().toString(36);
   const made = new Date().toISOString();
-  const rows = slip.map((l, i) => ({type: 'pick', slip: slipId, legs: n, mult: payouts[n] || null, season: D.meta.season, made, ...l, p: legProb(l)}));
+  const rows = slip.map((l, i) => ({type: 'pick', slip: slipId, legs: n, mult: payouts[n] || null, season: D.meta.season, made, ...l, p: legState(l).p}));
   $('#saveMsg').textContent = 'Saving…';
   try {
     if (picksMode === 'db') {
@@ -824,31 +765,6 @@ function renderPicks() {
 }
 
 // ---------- recommendations ----------
-function invPhi(p) {
-  // Acklam's rational approximation of the inverse normal CDF
-  const a = [-39.6968302866538, 220.946098424521, -275.928510446969, 138.357751867269, -30.6647980661472, 2.50662827745924];
-  const b = [-54.4760987982241, 161.585836858041, -155.698979859887, 66.8013118877197, -13.2806815528857];
-  const c = [-0.00778489400243029, -0.322396458041136, -2.40075827716184, -2.54973253934373, 4.37466414146497, 2.93816398269878];
-  const d = [0.00778469570904146, 0.32246712907004, 2.445134137143, 3.75440866190742];
-  const pl = 0.02425;
-  if (p < pl) { const q = Math.sqrt(-2 * Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
-  if (p > 1 - pl) return -invPhi(1 - p);
-  const q = p - 0.5, r = q * q;
-  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
-}
-// The worst PrizePicks line (x.5) at which a side still reaches the break-even chance `be`.
-function targetLine(pr, m, side, be) {
-  if (m.kind === 'pois') {
-    for (let L = side === 'more' ? 4.5 : 0.5; side === 'more' ? L >= 0.5 : L <= 4.5; L += side === 'more' ? -1 : 1) {
-      const p = probs(m, pr.mu, pr.sd, L);
-      if ((side === 'more' ? p.more : p.less) >= be) return L;
-    }
-    return null;
-  }
-  const z = invPhi(be);
-  if (side === 'more') { const x = pr.mu - z * pr.sd; const L = Math.floor(x - 0.5) + 0.5; return L >= 0.5 ? L : null; }
-  const x = pr.mu + z * pr.sd; return Math.ceil(x + 0.5) - 0.5;
-}
 const SPOT_MARKETS = {pyd: 160, cmp: 14, ryd: 30, car: 9, recyd: 30, rec: 2.5, rry: 45, fan: 8};
 function spots() {
   const out = [];
@@ -857,7 +773,7 @@ function spots() {
     const inj = D.inj[pl.id];
     if (inj && (inj.s === 'Out' || inj.s === 'Doubtful')) continue;
     const ng = nextGame(pl.t);
-    if (!ng || ng.bye || ng.g.wk !== curWeek) continue;
+    if (!ng || ng.bye || ng.started || ng.g.wk !== curWeek) continue;
     if (pl.games.at(-1).wk < curWeek - 3) continue; // hasn't played lately
     for (const m of marketsFor(pl)) {
       const floor = SPOT_MARKETS[m.k]; if (floor == null) continue;
@@ -884,7 +800,7 @@ function buildSlip(rows, legs) {
   const be = breakeven(legs);
   const picked = [], games = new Set(), teams = new Set();
   for (const r of rows) {
-    if (r.e.pSide < be || !r.e.ng || r.e.ng.bye) continue;
+    if (r.e.pSide < be || !r.e.ng || r.e.ng.bye || r.e.ng.started) continue;
     const inj = D.inj[r.pl.id]; if (inj && (inj.s === 'Out' || inj.s === 'Doubtful')) continue;
     if (games.has(r.e.ng.g.id)) continue;
     picked.push(r); games.add(r.e.ng.g.id); teams.add(r.pl.t);
@@ -905,7 +821,7 @@ function renderRecs() {
   $('#recHero').innerHTML = `<span class="eyebrow">Week ${curWeek} · ${left} game${left === 1 ? '' : 's'} left</span>
     <h2>This week’s top picks</h2>
     <p>Players the model projects well above or below their season average, and the PrizePicks line to look for. Tap any card for the full breakdown.</p>
-    <div class="stats"><div class="chipstat"><b>${recSpots.more.length}</b><span>More spots</span></div><div class="chipstat"><b>${recSpots.less.length}</b><span>Less spots</span></div><div class="chipstat"><b>${pct(be2)}</b><span>2-pick break-even</span></div></div>`;
+    <div class="stats"><div class="chipstat"><b>${recSpots.more.length}</b><span>More spots</span></div><div class="chipstat"><b>${recSpots.less.length}</b><span>Less spots</span></div><div class="chipstat"><b>${pct(be2)}</b><span>2-pick break-even</span></div>${calibration ? `<div class="chipstat"><b>${(calibration.n / 1000).toFixed(1)}k</b><span>Past props tested</span></div>` : ''}</div>`;
   // Best slips from the pasted board
   const s2 = buildSlip(boardRows, 2), s3 = buildSlip(boardRows, 3);
   const slipCard = (s, n) => !s ? `<div class="stat"><span class="k">Best ${n}-pick</span><span class="small muted">Not enough lines clear the ${pct(breakeven(n))} break-even from different games.</span></div>` :
@@ -917,7 +833,7 @@ function renderRecs() {
     <div class="grid2e">${slipCard(s2, 2)}${slipCard(s3, 3)}</div>`;
   $('#recBest').querySelectorAll('[data-load]').forEach(b => b.addEventListener('click', () => {
     const s = +b.dataset.load === 2 ? s2 : s3;
-    slip = []; s.picked.forEach(r => addLeg(r.pl, r.m, r.line, r.e.side, r.e)); showTab('slip');
+    slip = []; s.picked.forEach(r => addLeg(r.pl, r.m, r.line, r.e.side, r.e, {confirmed: !usingExample, src: 'board'})); showTab('slip');
   }));
   // Spot cards
   const card = s => {
@@ -927,7 +843,7 @@ function renderRecs() {
     if (ng.imp != null) tags.push(`Team total ${fmt1(ng.imp)}`);
     tags.push(`Last 3: ${fmt1(s.l3avg)}`);
     const hi = Math.max(s.avg, s.pr.mu) * 1.25, w = v => Math.min(100, v / hi * 100).toFixed(1);
-    const status = s.inj && s.inj.s ? `<span class="pill warn">${esc(s.inj.s)}</span>` : '';
+    const status = injuryState(s.pl, s.inj, ng).k === 'clear' ? '' : injuryPill(s.pl, s.inj, ng);
     return `<div class="card" role="button" tabindex="0" data-spot="${s.pl.id}|${s.m.k}|${L ?? ''}">
       <div class="who">${tm(s.pl.t)}<b>${esc(s.pl.n)}</b><span class="mu">${s.pl.p} · ${ng.home ? 'vs' : '@'} ${ng.opp}</span>${status}</div>
       <div class="call"><div><div class="side ${s.side}">${s.side === 'more' ? 'More' : 'Less'} ${L ?? ''}</div><div class="what">${esc(s.m.label)}${L != null ? (s.side === 'more' ? ' · line at or below' : ' · line at or above') : ''}</div></div>
@@ -944,6 +860,7 @@ function renderRecs() {
     <p class="small muted">Tough matchups or a low game total. Take Less only if the line is at or above the number shown.</p>
     ${recSpots.less.length ? `<div class="cards">${recSpots.less.map(card).join('')}</div>` : '<p class="muted">No strong Less spots this week.</p>'}
     <p class="note">Each line shown is where the model’s chance reaches the ${pct(be2)} a 2-pick Power Play needs. The bar shows the projection; the black mark is the season average. Check injuries and inactives before kickoff.</p>`;
+  renderModelCheck();
   document.querySelectorAll('[data-spot]').forEach(c => {
     const [id, mk, L] = c.dataset.spot.split('|');
     const open = () => { setPlayer(byId[id], mk, L ? parseFloat(L) : null, false); showTab('check'); };
@@ -951,12 +868,42 @@ function renderRecs() {
       if (ev.target.closest('[data-spotadd]')) {
         const pl = byId[id], m = MK[mk], line = parseFloat(L), e = evaluate(pl, m, line);
         const side = recSpots.more.some(s => s.pl.id === id && s.m.k === mk) ? 'more' : 'less';
-        addLeg(pl, m, line, side, e); return;
+        addLeg(pl, m, line, side, e, {confirmed: false, src: 'target'}); return;
       }
       open();
     });
     c.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target === c) open(); });
   });
+}
+
+// ---------- model track record (backtest.json) ----------
+function renderModelCheck() {
+  const el = $('#recModel'), b = calibration;
+  if (!b) { el.innerHTML = '<div class="head"><h2>Model track record</h2></div><p class="muted">The backtest has not run yet, so these chances are uncalibrated model estimates.</p>'; return; }
+  const o = b.outOfSample, rows = (o && o.n ? o.calibration : b.calibration.calibrated).filter(x => x.n);
+  const when = new Date(b.generated).toLocaleDateString([], {month: 'short', day: 'numeric'});
+  const W = 640, H = 210, L = 40, R = 12, T = 16, Bm = 36, lo = 0.45, hi = 0.85;
+  const x = v => L + (W - L - R) * (v - lo) / (hi - lo), y = v => T + (H - T - Bm) * (1 - (v - lo) / (hi - lo));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Predicted against actual hit rate for ${o && o.n ? o.season + ' games the calibration never saw' : 'backtested props'}">`;
+  [0.5, 0.6, 0.7, 0.8].forEach(t => { svg += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${Math.round(t * 100)}%</text><text x="${x(t)}" y="${H - Bm + 16}" text-anchor="middle" font-size="11" fill="var(--muted)">${Math.round(t * 100)}%</text>`; });
+  svg += `<line x1="${x(lo)}" y1="${y(lo)}" x2="${x(hi)}" y2="${y(hi)}" stroke="var(--muted)" stroke-dasharray="5 4"/><text x="${x(0.8)}" y="${y(0.8) - 8}" text-anchor="end" font-size="11" fill="var(--muted)">perfect</text>`;
+  rows.forEach(r => { const rr = Math.max(5, Math.min(14, Math.sqrt(r.n) / 2.2)); svg += `<circle cx="${x(r.predicted)}" cy="${y(r.actual)}" r="${rr}" fill="var(--accent)" fill-opacity=".85"><title>Model said ${pct(r.predicted)}, hit ${pct(r.actual)} (${r.n} props)</title></circle>`; });
+  svg += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">Model's chance for its pick</text></svg>`;
+  const clear = o && o.n ? o.breakEven2Pick : b.breakEven2Pick;
+  const mk = Object.values(b.markets).sort((a, c) => c.n - a.n).slice(0, 6);
+  el.innerHTML = `<div class="head"><h2>Model track record</h2><span class="small muted">Backtest updated ${esc(when)}</span></div>
+    <p class="small muted">Every week of 2025 and 2026 so far was replayed using only the data available before kickoff. ${o && o.n ? `The chart shows ${o.season} games the calibration never saw.` : ''} Dots near the dashed line mean the chances shown in the app match how often picks actually hit.</p>
+    <div class="grid2">
+      <div class="chart">${svg}</div>
+      <div style="display:grid;gap:10px;align-content:start">
+        <div class="stat"><span class="k">Picks the app rated ${pct(clear.threshold)}+</span><span class="v">hit ${pct(clear.hitRate)}</span><span class="small muted">${clear.n.toLocaleString()} props · model said ${pct(clear.predicted)}</span></div>
+        <div class="stat"><span class="k">Accuracy score (Brier, lower is better)</span><span class="v">${(o && o.n ? o.brierCalibrated : b.markets.fan.brierPlatt).toFixed(3)}</span><span class="small muted">A coin flip scores 0.250${o && o.n ? `; uncalibrated model ${o.brierRaw.toFixed(3)}` : ''}</span></div>
+      </div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Stat</th><th class="r">Props tested</th><th class="r">Avg miss</th><th class="r">Season-avg miss</th><th class="r">History adj</th></tr></thead><tbody>
+      ${mk.map(v => `<tr><td>${esc(v.label)}</td><td class="r">${v.n.toLocaleString()}</td><td class="r"><b>${fmt1(v.maeModel)}</b></td><td class="r">${fmt1(v.maeNaive)}</td><td class="r">×${v.scale.toFixed(2)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="note">Old PrizePicks lines aren't available, so the test uses a stand-in line at each player's season average. Real lines are sharper, so expect lower hit rates than shown here. Weather, rest, travel and injuries are not in the model yet.</p>`;
 }
 
 // ---------- tabs ----------

@@ -1,0 +1,59 @@
+name: Backtest and calibrate
+
+on:
+  schedule:
+    # Tuesdays 10:40 UTC (6:40 a.m. Eastern daylight time), after Monday night's stats post
+    - cron: "40 10 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build week-by-week snapshots
+        run: |
+          mkdir -p "$RUNNER_TEMP/dl"
+          python3 -I scripts/backtest_data.py "$RUNNER_TEMP/dl" "$RUNNER_TEMP/snapshots.jsonl"
+
+      - name: Run the backtest
+        run: node scripts/backtest.js "$RUNNER_TEMP/snapshots.jsonl" "$RUNNER_TEMP/backtest.json"
+
+      - name: Sanity-check before replacing the calibration
+        run: |
+          python3 -I - "$RUNNER_TEMP/backtest.json" <<'PY'
+          import json, sys
+          b = json.load(open(sys.argv[1]))
+          assert b["n"] >= 5000, f"only {b['n']} backtested props"
+          assert len(b["platt"]) >= 10, "calibration missing for most stats"
+          for k, c in b["platt"].items():
+              assert 0 < c["b"] <= 1 and abs(c["a"]) < 2, f"odd calibration for {k}: {c}"
+          print("ok", b["n"], "props; out of sample", b["outOfSample"]["n"], "brier", b["outOfSample"]["brierCalibrated"])
+          PY
+          cp "$RUNNER_TEMP/backtest.json" backtest.json
+
+      - name: Commit if the calibration changed
+        run: |
+          if git diff --quiet -- backtest.json; then echo "No change"; exit 0; fi
+          git config user.name "prop-desk-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backtest.json
+          git commit -m "Update backtest and calibration $(date -u +%Y-%m-%d)"
+          git pull --rebase --quiet
+          git push
