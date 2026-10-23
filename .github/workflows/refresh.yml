@@ -1,0 +1,51 @@
+name: Refresh NFL data
+
+on:
+  schedule:
+    # 11:40 and 20:40 UTC = 7:40 a.m. and 4:40 p.m. Eastern (daylight time)
+    - cron: "40 11,20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build data.json from nflverse
+        run: |
+          mkdir -p "$RUNNER_TEMP/dl"
+          python3 -I scripts/build.py "$RUNNER_TEMP/dl" "$RUNNER_TEMP/data.json"
+
+      - name: Sanity-check before replacing the published data
+        run: |
+          python3 -I - "$RUNNER_TEMP/data.json" data.json <<'PY'
+          import json, sys
+          new = json.load(open(sys.argv[1])); old = json.load(open(sys.argv[2]))
+          n, o = new["meta"], old["meta"]
+          assert n["players"] >= 300, f"only {n['players']} players"
+          assert n["statWeeks"], "no stat weeks"
+          assert n["finalGames"] >= o["finalGames"], f"final games went down: {n['finalGames']} < {o['finalGames']}"
+          print("ok", n["finalGames"], "finals,", n["players"], "players, injuries week", n["injuryWeek"])
+          PY
+          cp "$RUNNER_TEMP/data.json" data.json
+
+      - name: Commit if the data changed
+        run: |
+          if git diff --quiet -- data.json; then echo "No change"; exit 0; fi
+          git config user.name "prop-desk-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Refresh NFL data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push
