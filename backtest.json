@@ -1,219 +1,219 @@
 {
- "generated": "2026-11-17T19:21:19.855Z",
+ "generated": "2026-11-24T20:51:13.409Z",
  "method": "Walk-forward: the data as it stood before each week, projected with model.js, tested against a stand-in line at floor(season-to-date average) + 0.5 because past PrizePicks lines are not available. Probabilities are calibrated per stat with Platt scaling: P(more) = sigmoid(a + b * logit(p)).",
  "seasons": [
   2025,
   2026
  ],
- "weeks": 22,
- "n": 16593,
+ "weeks": 23,
+ "n": 17281,
  "scale": {
-  "pyd": 0.966,
-  "ptd": 0.965,
-  "cmp": 0.96,
-  "att": 0.968,
-  "int": 0.939,
-  "pry": 0.965,
-  "ryd": 0.975,
+  "pyd": 0.968,
+  "ptd": 0.963,
+  "cmp": 0.964,
+  "att": 0.97,
+  "int": 0.931,
+  "pry": 0.966,
+  "ryd": 0.974,
   "car": 0.991,
-  "recyd": 0.948,
-  "rec": 0.948,
-  "rry": 0.967,
-  "td": 0.819,
-  "fan": 0.958
+  "recyd": 0.945,
+  "rec": 0.947,
+  "rry": 0.965,
+  "td": 0.817,
+  "fan": 0.957
  },
  "platt": {
   "pyd": {
-   "a": 0.0942,
-   "b": 0.695
+   "a": 0.0903,
+   "b": 0.7246
   },
   "ptd": {
-   "a": 0.0736,
-   "b": 0.8691
+   "a": 0.0626,
+   "b": 0.9332
   },
   "cmp": {
-   "a": 0.1714,
+   "a": 0.1492,
    "b": 1
   },
   "att": {
-   "a": 0.1271,
-   "b": 0.8971
+   "a": 0.1144,
+   "b": 0.8843
   },
   "int": {
-   "a": -0.0695,
-   "b": 0.2169
+   "a": -0.0731,
+   "b": 0.2214
   },
   "pry": {
-   "a": 0.1171,
-   "b": 0.6909
+   "a": 0.1242,
+   "b": 0.7236
   },
   "ryd": {
-   "a": -0.291,
-   "b": 0.3888
+   "a": -0.2847,
+   "b": 0.3746
   },
   "car": {
-   "a": -0.1612,
-   "b": 0.2689
+   "a": -0.1728,
+   "b": 0.2867
   },
   "recyd": {
-   "a": -0.3271,
-   "b": 0.7726
+   "a": -0.3356,
+   "b": 0.7414
   },
   "rec": {
-   "a": -0.241,
-   "b": 0.55
+   "a": -0.2361,
+   "b": 0.544
   },
   "rry": {
-   "a": -0.2663,
-   "b": 0.488
+   "a": -0.2701,
+   "b": 0.485
   },
   "td": {
-   "a": -0.2206,
-   "b": 0.7363
+   "a": -0.1944,
+   "b": 0.7704
   },
   "fan": {
-   "a": -0.2483,
-   "b": 0.4953
+   "a": -0.2509,
+   "b": 0.5008
   }
  },
  "shrink": {
-  "pyd": 0.68,
-  "ptd": 0.93,
-  "cmp": 0.94,
+  "pyd": 0.71,
+  "ptd": 0.99,
+  "cmp": 0.95,
   "att": 0.83,
-  "int": 0.3,
-  "pry": 0.66,
-  "ryd": 0.48,
-  "car": 0.38,
-  "recyd": 0.97,
-  "rec": 0.76,
+  "int": 0.31,
+  "pry": 0.69,
+  "ryd": 0.46,
+  "car": 0.4,
+  "recyd": 0.96,
+  "rec": 0.75,
   "rry": 0.66,
-  "td": 0.93,
-  "fan": 0.65
+  "td": 0.94,
+  "fan": 0.66
  },
  "markets": {
   "pyd": {
    "label": "Pass Yards",
-   "n": 536,
-   "scale": 0.966,
-   "maeModelRaw": 62.02,
-   "maeModel": 61.71,
-   "maeNaive": 64.22,
-   "biasRaw": -7.79,
-   "bias": 0.01,
+   "n": 557,
+   "scale": 0.968,
+   "maeModelRaw": 61.04,
+   "maeModel": 60.83,
+   "maeNaive": 63.28,
+   "biasRaw": -7.4,
+   "bias": -0.05,
    "overRate": 0.485,
-   "brierUncalibrated": 0.2404,
-   "brierRaw": 0.2416,
-   "brierCalibrated": 0.2401,
+   "brierUncalibrated": 0.2396,
+   "brierRaw": 0.2406,
+   "brierCalibrated": 0.2394,
    "brierCoinFlip": 0.25,
-   "k": 0.68,
+   "k": 0.71,
    "platt": {
-    "a": 0.0942,
-    "b": 0.695
+    "a": 0.0903,
+    "b": 0.7246
    },
-   "brierPlatt": 0.2402,
+   "brierPlatt": 0.2395,
    "outOfSample": {
     "season": 2026,
-    "n": 170,
+    "n": 191,
     "kFromPriorSeasons": 0.68,
-    "brierRaw": 0.2469,
-    "brierCalibrated": 0.2428,
+    "brierRaw": 0.2441,
+    "brierCalibrated": 0.241,
     "plattFromPriorSeasons": {
      "a": 0.1509,
      "b": 0.7353
     },
-    "brierPlatt": 0.2424
+    "brierPlatt": 0.2404
    }
   },
   "ptd": {
    "label": "Pass TDs",
-   "n": 572,
-   "scale": 0.965,
+   "n": 594,
+   "scale": 0.963,
    "maeModelRaw": 0.98,
    "maeModel": 0.97,
    "maeNaive": 1.01,
-   "biasRaw": -0.05,
+   "biasRaw": -0.06,
    "bias": 0,
-   "overRate": 0.566,
-   "brierUncalibrated": 0.2347,
-   "brierRaw": 0.2344,
-   "brierCalibrated": 0.2343,
+   "overRate": 0.567,
+   "brierUncalibrated": 0.2326,
+   "brierRaw": 0.2323,
+   "brierCalibrated": 0.2323,
    "brierCoinFlip": 0.25,
-   "k": 0.93,
+   "k": 0.99,
    "platt": {
-    "a": 0.0736,
-    "b": 0.8691
+    "a": 0.0626,
+    "b": 0.9332
    },
-   "brierPlatt": 0.234,
+   "brierPlatt": 0.2321,
    "outOfSample": {
     "season": 2026,
-    "n": 170,
+    "n": 192,
     "kFromPriorSeasons": 0.85,
-    "brierRaw": 0.2256,
-    "brierCalibrated": 0.2267,
+    "brierRaw": 0.2202,
+    "brierCalibrated": 0.2219,
     "plattFromPriorSeasons": {
      "a": 0.0876,
      "b": 0.7632
     },
-    "brierPlatt": 0.2269
+    "brierPlatt": 0.2225
    }
   },
   "cmp": {
    "label": "Pass Completions",
-   "n": 560,
-   "scale": 0.96,
-   "maeModelRaw": 5.11,
-   "maeModel": 5.09,
-   "maeNaive": 5.49,
-   "biasRaw": -0.81,
-   "bias": 0.01,
-   "overRate": 0.455,
-   "brierUncalibrated": 0.227,
-   "brierRaw": 0.2278,
-   "brierCalibrated": 0.2278,
+   "n": 581,
+   "scale": 0.964,
+   "maeModelRaw": 5.05,
+   "maeModel": 5.04,
+   "maeNaive": 5.41,
+   "biasRaw": -0.74,
+   "bias": 0,
+   "overRate": 0.456,
+   "brierUncalibrated": 0.2271,
+   "brierRaw": 0.2276,
+   "brierCalibrated": 0.2276,
    "brierCoinFlip": 0.25,
-   "k": 0.94,
+   "k": 0.95,
    "platt": {
-    "a": 0.1714,
+    "a": 0.1492,
     "b": 1
    },
-   "brierPlatt": 0.2263,
+   "brierPlatt": 0.2265,
    "outOfSample": {
     "season": 2026,
-    "n": 175,
+    "n": 196,
     "kFromPriorSeasons": 0.95,
-    "brierRaw": 0.2411,
-    "brierCalibrated": 0.2402,
+    "brierRaw": 0.2408,
+    "brierCalibrated": 0.2399,
     "plattFromPriorSeasons": {
      "a": 0.1916,
      "b": 1
     },
-    "brierPlatt": 0.2365
+    "brierPlatt": 0.236
    }
   },
   "att": {
    "label": "Pass Attempts",
-   "n": 567,
-   "scale": 0.968,
-   "maeModelRaw": 7.42,
-   "maeModel": 7.39,
-   "maeNaive": 7.93,
-   "biasRaw": -1,
-   "bias": 0,
-   "overRate": 0.46,
-   "brierUncalibrated": 0.2317,
-   "brierRaw": 0.2336,
-   "brierCalibrated": 0.2331,
+   "n": 588,
+   "scale": 0.97,
+   "maeModelRaw": 7.38,
+   "maeModel": 7.35,
+   "maeNaive": 7.89,
+   "biasRaw": -0.93,
+   "bias": 0.01,
+   "overRate": 0.461,
+   "brierUncalibrated": 0.2324,
+   "brierRaw": 0.2339,
+   "brierCalibrated": 0.2334,
    "brierCoinFlip": 0.25,
    "k": 0.83,
    "platt": {
-    "a": 0.1271,
-    "b": 0.8971
+    "a": 0.1144,
+    "b": 0.8843
    },
-   "brierPlatt": 0.2324,
+   "brierPlatt": 0.2329,
    "outOfSample": {
     "season": 2026,
-    "n": 177,
+    "n": 198,
     "kFromPriorSeasons": 0.89,
     "brierRaw": 0.2536,
     "brierCalibrated": 0.2501,
@@ -221,167 +221,167 @@
      "a": 0.0881,
      "b": 0.9828
     },
-    "brierPlatt": 0.2481
+    "brierPlatt": 0.2484
    }
   },
   "int": {
    "label": "Interceptions",
-   "n": 508,
-   "scale": 0.939,
-   "maeModelRaw": 0.67,
+   "n": 531,
+   "scale": 0.931,
+   "maeModelRaw": 0.66,
    "maeModel": 0.66,
-   "maeNaive": 0.68,
-   "biasRaw": -0.04,
+   "maeNaive": 0.67,
+   "biasRaw": -0.05,
    "bias": 0,
-   "overRate": 0.47,
-   "brierUncalibrated": 0.2556,
-   "brierRaw": 0.2555,
-   "brierCalibrated": 0.2488,
+   "overRate": 0.469,
+   "brierUncalibrated": 0.2553,
+   "brierRaw": 0.2552,
+   "brierCalibrated": 0.2487,
    "brierCoinFlip": 0.25,
-   "k": 0.3,
+   "k": 0.31,
    "platt": {
-    "a": -0.0695,
-    "b": 0.2169
+    "a": -0.0731,
+    "b": 0.2214
    },
-   "brierPlatt": 0.2486,
+   "brierPlatt": 0.2485,
    "outOfSample": {
     "season": 2026,
-    "n": 148,
+    "n": 171,
     "kFromPriorSeasons": 0.32,
-    "brierRaw": 0.2573,
-    "brierCalibrated": 0.2492,
+    "brierRaw": 0.2558,
+    "brierCalibrated": 0.2489,
     "plattFromPriorSeasons": {
      "a": -0.1021,
      "b": 0.1962
     },
-    "brierPlatt": 0.2501
+    "brierPlatt": 0.2495
    }
   },
   "pry": {
    "label": "Pass+Rush Yds",
-   "n": 557,
-   "scale": 0.965,
-   "maeModelRaw": 64.51,
-   "maeModel": 64.29,
-   "maeNaive": 66.61,
-   "biasRaw": -8.48,
-   "bias": 0.05,
-   "overRate": 0.49,
-   "brierUncalibrated": 0.2418,
-   "brierRaw": 0.2429,
-   "brierCalibrated": 0.241,
+   "n": 578,
+   "scale": 0.966,
+   "maeModelRaw": 63.5,
+   "maeModel": 63.35,
+   "maeNaive": 65.62,
+   "biasRaw": -8.19,
+   "bias": 0.11,
+   "overRate": 0.491,
+   "brierUncalibrated": 0.2408,
+   "brierRaw": 0.2419,
+   "brierCalibrated": 0.2403,
    "brierCoinFlip": 0.25,
-   "k": 0.66,
+   "k": 0.69,
    "platt": {
-    "a": 0.1171,
-    "b": 0.6909
+    "a": 0.1242,
+    "b": 0.7236
    },
-   "brierPlatt": 0.2406,
+   "brierPlatt": 0.2398,
    "outOfSample": {
     "season": 2026,
-    "n": 171,
+    "n": 192,
     "kFromPriorSeasons": 0.73,
-    "brierRaw": 0.2525,
-    "brierCalibrated": 0.2471,
+    "brierRaw": 0.249,
+    "brierCalibrated": 0.2447,
     "plattFromPriorSeasons": {
      "a": 0.1751,
      "b": 0.8149
     },
-    "brierPlatt": 0.2469
+    "brierPlatt": 0.2437
    }
   },
   "ryd": {
    "label": "Rush Yards",
-   "n": 1023,
-   "scale": 0.975,
-   "maeModelRaw": 25.53,
-   "maeModel": 25.31,
-   "maeNaive": 25.4,
-   "biasRaw": -1.33,
-   "bias": -0.02,
-   "overRate": 0.423,
-   "brierUncalibrated": 0.2533,
-   "brierRaw": 0.2505,
-   "brierCalibrated": 0.246,
+   "n": 1064,
+   "scale": 0.974,
+   "maeModelRaw": 25.6,
+   "maeModel": 25.37,
+   "maeNaive": 25.47,
+   "biasRaw": -1.36,
+   "bias": -0.01,
+   "overRate": 0.425,
+   "brierUncalibrated": 0.2539,
+   "brierRaw": 0.251,
+   "brierCalibrated": 0.2462,
    "brierCoinFlip": 0.25,
-   "k": 0.48,
+   "k": 0.46,
    "platt": {
-    "a": -0.291,
-    "b": 0.3888
+    "a": -0.2847,
+    "b": 0.3746
    },
-   "brierPlatt": 0.2411,
+   "brierPlatt": 0.2416,
    "outOfSample": {
     "season": 2026,
-    "n": 287,
+    "n": 328,
     "kFromPriorSeasons": 0.5,
-    "brierRaw": 0.252,
-    "brierCalibrated": 0.2466,
+    "brierRaw": 0.2537,
+    "brierCalibrated": 0.2475,
     "plattFromPriorSeasons": {
      "a": -0.2825,
      "b": 0.4605
     },
-    "brierPlatt": 0.2415
+    "brierPlatt": 0.243
    }
   },
   "car": {
    "label": "Rush Attempts",
-   "n": 725,
+   "n": 757,
    "scale": 0.991,
-   "maeModelRaw": 4.39,
-   "maeModel": 4.38,
-   "maeNaive": 4.4,
+   "maeModelRaw": 4.4,
+   "maeModel": 4.39,
+   "maeNaive": 4.41,
    "biasRaw": -0.12,
    "bias": 0,
-   "overRate": 0.452,
-   "brierUncalibrated": 0.2562,
-   "brierRaw": 0.2553,
-   "brierCalibrated": 0.2467,
+   "overRate": 0.449,
+   "brierUncalibrated": 0.2552,
+   "brierRaw": 0.2543,
+   "brierCalibrated": 0.2463,
    "brierCoinFlip": 0.25,
-   "k": 0.38,
+   "k": 0.4,
    "platt": {
-    "a": -0.1612,
-    "b": 0.2689
+    "a": -0.1728,
+    "b": 0.2867
    },
-   "brierPlatt": 0.2457,
+   "brierPlatt": 0.2451,
    "outOfSample": {
     "season": 2026,
-    "n": 212,
+    "n": 244,
     "kFromPriorSeasons": 0.4,
-    "brierRaw": 0.2552,
-    "brierCalibrated": 0.2452,
+    "brierRaw": 0.2517,
+    "brierCalibrated": 0.2439,
     "plattFromPriorSeasons": {
      "a": -0.1911,
      "b": 0.3112
     },
-    "brierPlatt": 0.2486
+    "brierPlatt": 0.2461
    }
   },
   "recyd": {
    "label": "Receiving Yards",
-   "n": 2051,
-   "scale": 0.948,
-   "maeModelRaw": 25.85,
-   "maeModel": 25.38,
-   "maeNaive": 26.74,
-   "biasRaw": -2.49,
-   "bias": -0.02,
-   "overRate": 0.385,
-   "brierUncalibrated": 0.2397,
-   "brierRaw": 0.2344,
-   "brierCalibrated": 0.2344,
+   "n": 2144,
+   "scale": 0.945,
+   "maeModelRaw": 25.74,
+   "maeModel": 25.23,
+   "maeNaive": 26.57,
+   "biasRaw": -2.59,
+   "bias": 0.01,
+   "overRate": 0.383,
+   "brierUncalibrated": 0.2404,
+   "brierRaw": 0.2347,
+   "brierCalibrated": 0.2347,
    "brierCoinFlip": 0.25,
-   "k": 0.97,
+   "k": 0.96,
    "platt": {
-    "a": -0.3271,
-    "b": 0.7726
+    "a": -0.3356,
+    "b": 0.7414
    },
-   "brierPlatt": 0.2291,
+   "brierPlatt": 0.2292,
    "outOfSample": {
     "season": 2026,
-    "n": 662,
+    "n": 755,
     "kFromPriorSeasons": 1.12,
-    "brierRaw": 0.2356,
-    "brierCalibrated": 0.2366,
+    "brierRaw": 0.2368,
+    "brierCalibrated": 0.2379,
     "plattFromPriorSeasons": {
      "a": -0.3018,
      "b": 0.9128
@@ -391,134 +391,134 @@
   },
   "rec": {
    "label": "Receptions",
-   "n": 2115,
-   "scale": 0.948,
+   "n": 2203,
+   "scale": 0.947,
    "maeModelRaw": 1.76,
    "maeModel": 1.73,
    "maeNaive": 1.82,
    "biasRaw": -0.21,
    "bias": 0,
-   "overRate": 0.395,
-   "brierUncalibrated": 0.2394,
-   "brierRaw": 0.2355,
-   "brierCalibrated": 0.2341,
+   "overRate": 0.396,
+   "brierUncalibrated": 0.2396,
+   "brierRaw": 0.2358,
+   "brierCalibrated": 0.2344,
    "brierCoinFlip": 0.25,
-   "k": 0.76,
+   "k": 0.75,
    "platt": {
-    "a": -0.241,
-    "b": 0.55
+    "a": -0.2361,
+    "b": 0.544
    },
-   "brierPlatt": 0.2319,
+   "brierPlatt": 0.2323,
    "outOfSample": {
     "season": 2026,
-    "n": 658,
+    "n": 746,
     "kFromPriorSeasons": 0.81,
-    "brierRaw": 0.2383,
-    "brierCalibrated": 0.2353,
+    "brierRaw": 0.239,
+    "brierCalibrated": 0.2361,
     "plattFromPriorSeasons": {
      "a": -0.2068,
      "b": 0.6256
     },
-    "brierPlatt": 0.2339
+    "brierPlatt": 0.2348
    }
   },
   "rry": {
    "label": "Rush+Rec Yds",
-   "n": 1940,
-   "scale": 0.967,
-   "maeModelRaw": 30.04,
-   "maeModel": 29.69,
-   "maeNaive": 30.69,
-   "biasRaw": -2.18,
-   "bias": 0.01,
-   "overRate": 0.415,
-   "brierUncalibrated": 0.2466,
-   "brierRaw": 0.2435,
-   "brierCalibrated": 0.2416,
+   "n": 2027,
+   "scale": 0.965,
+   "maeModelRaw": 29.95,
+   "maeModel": 29.58,
+   "maeNaive": 30.6,
+   "biasRaw": -2.3,
+   "bias": 0.02,
+   "overRate": 0.413,
+   "brierUncalibrated": 0.2468,
+   "brierRaw": 0.2434,
+   "brierCalibrated": 0.2415,
    "brierCoinFlip": 0.25,
    "k": 0.66,
    "platt": {
-    "a": -0.2663,
-    "b": 0.488
+    "a": -0.2701,
+    "b": 0.485
    },
-   "brierPlatt": 0.2381,
+   "brierPlatt": 0.238,
    "outOfSample": {
     "season": 2026,
-    "n": 587,
+    "n": 674,
     "kFromPriorSeasons": 0.79,
-    "brierRaw": 0.2484,
-    "brierCalibrated": 0.2446,
+    "brierRaw": 0.2477,
+    "brierCalibrated": 0.2443,
     "plattFromPriorSeasons": {
      "a": -0.2749,
      "b": 0.6444
     },
-    "brierPlatt": 0.2448
+    "brierPlatt": 0.2434
    }
   },
   "td": {
    "label": "Rush+Rec TDs",
-   "n": 2459,
-   "scale": 0.819,
+   "n": 2549,
+   "scale": 0.817,
    "maeModelRaw": 0.52,
    "maeModel": 0.49,
    "maeNaive": 0.55,
-   "biasRaw": -0.08,
+   "biasRaw": -0.09,
    "bias": 0,
-   "overRate": 0.298,
-   "brierUncalibrated": 0.2056,
-   "brierRaw": 0.2017,
-   "brierCalibrated": 0.2015,
+   "overRate": 0.297,
+   "brierUncalibrated": 0.2043,
+   "brierRaw": 0.2004,
+   "brierCalibrated": 0.2003,
    "brierCoinFlip": 0.25,
-   "k": 0.93,
+   "k": 0.94,
    "platt": {
-    "a": -0.2206,
-    "b": 0.7363
+    "a": -0.1944,
+    "b": 0.7704
    },
-   "brierPlatt": 0.2007,
+   "brierPlatt": 0.1997,
    "outOfSample": {
     "season": 2026,
-    "n": 757,
+    "n": 847,
     "kFromPriorSeasons": 0.89,
-    "brierRaw": 0.1855,
-    "brierCalibrated": 0.187,
+    "brierRaw": 0.1835,
+    "brierCalibrated": 0.1852,
     "plattFromPriorSeasons": {
      "a": -0.2934,
      "b": 0.6233
     },
-    "brierPlatt": 0.1874
+    "brierPlatt": 0.1861
    }
   },
   "fan": {
    "label": "Fantasy Score",
-   "n": 2980,
-   "scale": 0.958,
-   "maeModelRaw": 6.2,
-   "maeModel": 6.11,
-   "maeNaive": 6.33,
-   "biasRaw": -0.56,
+   "n": 3108,
+   "scale": 0.957,
+   "maeModelRaw": 6.16,
+   "maeModel": 6.07,
+   "maeNaive": 6.29,
+   "biasRaw": -0.57,
    "bias": 0,
-   "overRate": 0.418,
-   "brierUncalibrated": 0.2478,
-   "brierRaw": 0.244,
-   "brierCalibrated": 0.2419,
+   "overRate": 0.417,
+   "brierUncalibrated": 0.2477,
+   "brierRaw": 0.2437,
+   "brierCalibrated": 0.2417,
    "brierCoinFlip": 0.25,
-   "k": 0.65,
+   "k": 0.66,
    "platt": {
-    "a": -0.2483,
-    "b": 0.4953
+    "a": -0.2509,
+    "b": 0.5008
    },
-   "brierPlatt": 0.2388,
+   "brierPlatt": 0.2385,
    "outOfSample": {
     "season": 2026,
-    "n": 900,
+    "n": 1028,
     "kFromPriorSeasons": 0.66,
-    "brierRaw": 0.2419,
-    "brierCalibrated": 0.2398,
+    "brierRaw": 0.2414,
+    "brierCalibrated": 0.2396,
     "plattFromPriorSeasons": {
      "a": -0.2658,
      "b": 0.493
     },
-    "brierPlatt": 0.2396
+    "brierPlatt": 0.2387
    }
   }
  },
@@ -527,132 +527,132 @@
    {
     "from": 0.5,
     "to": 0.55,
-    "n": 4402,
+    "n": 4600,
     "predicted": 0.525,
-    "actual": 0.53
+    "actual": 0.529
    },
    {
     "from": 0.55,
     "to": 0.6,
-    "n": 3919,
+    "n": 4090,
     "predicted": 0.574,
-    "actual": 0.549
+    "actual": 0.552
    },
    {
     "from": 0.6,
     "to": 0.65,
-    "n": 3097,
+    "n": 3221,
     "predicted": 0.624,
-    "actual": 0.613
+    "actual": 0.61
    },
    {
     "from": 0.65,
     "to": 0.7,
-    "n": 2279,
+    "n": 2364,
     "predicted": 0.674,
-    "actual": 0.637
+    "actual": 0.638
    },
    {
     "from": 0.7,
     "to": 1,
-    "n": 2896,
+    "n": 3006,
     "predicted": 0.765,
-    "actual": 0.702
+    "actual": 0.704
    }
   ],
   "calibrated": [
    {
     "from": 0.5,
     "to": 0.55,
-    "n": 4425,
+    "n": 4514,
     "predicted": 0.525,
     "actual": 0.525
    },
    {
     "from": 0.55,
     "to": 0.6,
-    "n": 4309,
-    "predicted": 0.574,
-    "actual": 0.581
+    "n": 4526,
+    "predicted": 0.575,
+    "actual": 0.58
    },
    {
     "from": 0.6,
     "to": 0.65,
-    "n": 3383,
+    "n": 3565,
     "predicted": 0.623,
     "actual": 0.639
    },
    {
     "from": 0.65,
     "to": 0.7,
-    "n": 2047,
+    "n": 2158,
     "predicted": 0.673,
-    "actual": 0.688
+    "actual": 0.69
    },
    {
     "from": 0.7,
     "to": 1,
-    "n": 2429,
-    "predicted": 0.758,
-    "actual": 0.744
+    "n": 2518,
+    "predicted": 0.76,
+    "actual": 0.745
    }
   ]
  },
  "breakEven2Pick": {
   "threshold": 0.577,
-  "n": 9757,
+  "n": 10252,
   "hitRate": 0.669,
   "predicted": 0.66
  },
  "outOfSample": {
   "season": 2026,
-  "n": 5074,
+  "n": 5762,
   "note": "Calibration fitted on 2025 only, then applied to 2026 games it never saw.",
-  "brierRaw": 0.2361,
-  "brierCalibrated": 0.2318,
+  "brierRaw": 0.2359,
+  "brierCalibrated": 0.2312,
   "brierCoinFlip": 0.25,
   "calibration": [
    {
     "from": 0.5,
     "to": 0.55,
-    "n": 1025,
+    "n": 1191,
     "predicted": 0.526,
-    "actual": 0.479
+    "actual": 0.484
    },
    {
     "from": 0.55,
     "to": 0.6,
-    "n": 1189,
+    "n": 1356,
     "predicted": 0.575,
-    "actual": 0.543
+    "actual": 0.544
    },
    {
     "from": 0.6,
     "to": 0.65,
-    "n": 1045,
+    "n": 1201,
     "predicted": 0.624,
-    "actual": 0.633
+    "actual": 0.638
    },
    {
     "from": 0.65,
     "to": 0.7,
-    "n": 765,
+    "n": 867,
     "predicted": 0.674,
-    "actual": 0.673
+    "actual": 0.681
    },
    {
     "from": 0.7,
     "to": 1,
-    "n": 1050,
+    "n": 1147,
     "predicted": 0.757,
-    "actual": 0.725
+    "actual": 0.726
    }
   ],
   "breakEven2Pick": {
    "threshold": 0.577,
-   "n": 3374,
-   "hitRate": 0.658,
-   "predicted": 0.671
+   "n": 3797,
+   "hitRate": 0.662,
+   "predicted": 0.67
   }
  }
 }
